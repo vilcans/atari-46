@@ -5,6 +5,7 @@
 
 	seg.u variables
 	org $80
+position	ds 1
 
 	seg code
 	org  $f000
@@ -19,6 +20,9 @@ main_start:
 	CLEAN_START
 
 game_frame:
+	lsr SWCHB ; test reset switch
+	bcc main_start
+
 	TIMER_SETUP 40   ;NTSC: 40 lines vblank
 
 	lda #2
@@ -35,15 +39,38 @@ game_frame:
 	lda #$00
 	sta COLUBK
 
-	TIMER_WAIT
+	; Check input
 
+	lda #$20  ; Down
+	bit SWCHA
+	bne .not_down
+	dec position
+.not_down:
+
+	lda #$10    ; Up
+	bit SWCHA
+	bne .not_up
+	inc position
+.not_up:
+
+	lda INPT4
+	bmi .not_fire
+	lda #0
+	sta position
+.not_fire:
+
+	; Wait for end of vblank
+	TIMER_WAIT
 	lda #0
 	sta VBLANK
 
 	; Start of visible graphics
 	ldx #192
+	lda position
+	clc
 .each_scanline:
-	stx COLUBK
+	sta COLUBK
+	adc #1
 	sta WSYNC
 	dex
 	bne .each_scanline

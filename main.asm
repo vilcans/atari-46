@@ -47,6 +47,11 @@ main_start:
 	lda #$1e
 	sta COLUP0
 
+	lda #$5-1
+	sta AUDF0
+	lda #$8
+	sta AUDC0
+
 	.if 0
 	lda #$02    ; SCORE = different colors for left and right
 	sta CTRLPF
@@ -79,10 +84,9 @@ game_frame:
 
 	lda #$2f
 	sta COLUPF
-	lda #$04
-	sta COLUBK
 
 	lda #$00
+	sta COLUBK
 	sta PF0
 	sta PF1
 	sta PF2
@@ -164,8 +168,18 @@ game_frame:
 	tay
 	jsr shift_y_lines
 
+	; Invincibility and flash visuals
+
 	lda invincible_count
 	beq .not_invincible
+
+	adc #-invincibility_time+$0f
+	bcc .no_flash
+	sta COLUBK
+	sta AUDV0
+.no_flash:
+
+	lda invincible_count
 	cmp #invincible_warning_time
 	bcs .broken
 	and #1

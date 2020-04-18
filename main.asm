@@ -159,11 +159,11 @@ game_frame:
 	ldy vertical_shift   ; sprite counter
 
 .each_row:
-	sta WSYNC
-
 	inx
 	lda #row_height_scanlines-1   ; minus 1 because first row is initialization
 	sta scanlines_left_in_row
+
+	sta WSYNC
 
 	lda avatar_sprite,y
 	sta GRP0

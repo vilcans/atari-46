@@ -5,6 +5,7 @@
 
 row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
+number_of_visible_rows = 23
 
 	seg.u variables
 	org $80
@@ -15,8 +16,9 @@ position_hi	ds 1
 avatar_x ds 1
 
 ; Used in kernel
-scanline_count ds 1
 scanlines_left_in_row ds 1
+rows_left ds 1
+vertical_shift ds 1
 
 row_pf0l ds 1
 row_pf1l ds 1
@@ -121,8 +123,9 @@ game_frame:
 	sta WSYNC
 	sta HMOVE	; apply fine offsets
 
-	; Get level row from high resolution position
+	ldy #0   ; sprite counter
 
+	; Get level row from high resolution position
 	lda position_hi
 	sta temp0
 	lda position_lo
@@ -133,32 +136,32 @@ game_frame:
 	REPEND
 	tax    ; x = level row index
 
-	lda #192
-	sta scanline_count
+	lda #number_of_visible_rows
+	sta rows_left
 
 	; Wait for end of vblank
 	TIMER_WAIT
 	;lda #0   ; already 0 from TIMER_WAIT
 	sta VBLANK
 
-	;TIMER_SETUP 192
-
-
 	; Start of visible graphics
-	ldy #0   ; sprite counter
 
+	; Shift display for scrolling
 	lda position_lo
 	and #row_height_scanlines-1
-	eor #row_height_scanlines-1
-	sta scanlines_left_in_row
-	bne .each_row
+	eor #row_height_scanlines-1  ; how many scanlines to shift down
+	sta vertical_shift
+	tay
+	jsr shift_y_lines
 
-.next_row:
-	inx
-	lda #row_height_scanlines-1
-	sta scanlines_left_in_row
+	ldy vertical_shift   ; sprite counter
+
 .each_row:
 	sta WSYNC
+
+	inx
+	lda #row_height_scanlines-1   ; minus 1 because first row is initialization
+	sta scanlines_left_in_row
 
 	lda avatar_sprite,y
 	sta GRP0
@@ -183,8 +186,6 @@ game_frame:
 	sta row_pf2r
 
 	iny
-	dec scanline_count
-	beq .end
 
 .each_scanline:
 	sta WSYNC
@@ -210,21 +211,29 @@ game_frame:
 
 	iny  ; next sprite pointer
 
-	dec scanline_count
-	beq .end
-
 	dec scanlines_left_in_row
-	beq .next_row
 	bne .each_scanline
-.end:
+	dec rows_left
+	bne .each_row
 
-	TIMER_SETUP 30  ; NTSC: 30 lines overscan
+	sta WSYNC
 
 	lda #$00
-	sta COLUBK
 	sta PF0
 	sta PF1
 	sta PF2
+	sta GRP0
+
+	lda vertical_shift
+	eor #row_height_scanlines-1
+	tay
+	jsr shift_y_lines
+
+	sta WSYNC
+	lda #$00
+	sta COLUBK
+
+	TIMER_SETUP 29  ; NTSC: 30 lines overscan
 
 	TIMER_WAIT
 	jmp game_frame
@@ -247,6 +256,17 @@ DivideLoop
 	sta RESP0,x	; fix coarse position
 	sta HMP0,x	; set fine offset
 	rts		; return to caller
+
+; Delay Y scanlines.
+; Zero flag must correspond to the value in Y before call.
+shift_y_lines:
+	beq .end_shift
+.each_shift:
+	sta WSYNC
+	dey
+	bne .each_shift
+.end_shift:
+	rts
 
 level_data_start:
 	ALIGN $100

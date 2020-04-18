@@ -9,10 +9,15 @@ row_height_scanlines = 1 << row_height_bits
 	seg.u variables
 	org $80
 temp0 ds 1
+
 position_lo	ds 1
 position_hi	ds 1
+avatar_x ds 1
+
+; Used in kernel
 scanline_count ds 1
 scanlines_left_in_row ds 1
+
 	seg code
 	org  $f000
 
@@ -33,6 +38,9 @@ main_start:
 	lda #$88
 	sta COLUP1
 	.endif
+
+	lda #40
+	sta avatar_x
 
 game_frame:
 	lsr SWCHB ; test reset switch
@@ -91,6 +99,13 @@ game_frame:
 	sta position_lo
 .not_fire:
 
+	; Set avatar position
+	lda avatar_x
+	ldx #0		; player 0
+	jsr set_x_pos
+	sta WSYNC
+	sta HMOVE	; apply fine offsets
+
 	; Get level row from high resolution position
 
 	lda position_hi
@@ -117,14 +132,16 @@ game_frame:
 	lda #192
 	sta scanline_count
 
+	ldy #0
 .each_scanline:
 	sta WSYNC
 	stx COLUPF
 
-	SLEEP 3
+	lda avatar_sprite,y
+	sta GRP0
 
-	lda level_pf0l,x
-	sta PF0
+	;lda level_pf0l,x
+	;sta PF0
 	lda level_pf1l,x
 	sta PF1
 	lda level_pf2l,x
@@ -136,6 +153,8 @@ game_frame:
 	sta PF1
 	lda level_pf2r,x
 	sta PF2
+
+	iny  ; next sprite pointer
 
 	dec scanlines_left_in_row
 	bpl .not_next_row
@@ -155,9 +174,41 @@ game_frame:
 	TIMER_WAIT
 	jmp game_frame
 
+; SetHorizPos routine
+; Based on 8bitworkshop's SetHorizPos
+; A = X coordinate
+; X = player number (0 or 1)
+set_x_pos:
+	sta WSYNC	; start a new line
+	sec		; set carry flag
+DivideLoop
+	sbc #15		; subtract 15
+	bcs DivideLoop	; branch until negative
+	eor #7		; calculate fine offset
+	asl
+	asl
+	asl
+	asl
+	sta RESP0,x	; fix coarse position
+	sta HMP0,x	; set fine offset
+	rts		; return to caller
+
 level_data_start:
+	ALIGN $100
 	.include "level.asm"
 	echo "Size of levels:", *-level_data_start
+
+	ALIGN $100
+avatar_sprite:
+	;.byte #0        ; zero padding, also clears register
+	.byte #%00111100
+	.byte #%01000010
+	.byte #%11100111
+	.byte #%11111111
+	.byte #%10011001
+	.byte #%01111110
+	.byte #%11000011
+	.byte #%10000001
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left

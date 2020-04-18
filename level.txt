@@ -38,7 +38,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-x.x.x.x.x.x.x.x.x.x....................x
+x.x.x.x.x.x.x.x.x.x....................x f
 .x.x.x.x.x.x.x.x.x.x....................
 ...................x....................
 .x................xxxxxxxxxxxxxxxxxxxxxx
@@ -49,7 +49,7 @@ x.x.x.x.x.x.x.x.x.x....................x
 .......x.....xxxxxxx
 .......x.....xxxxxxx
 .......x.....xxxxxxx
-xxxxxxxx.......xxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxx.......xxxxxxxxxxxxxxxxxxxxxxxxx 7
 xxxxxxxx.............................xxx
 ....xxxxxxxx.........................xxx
 ...........x.........................xxx

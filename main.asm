@@ -244,7 +244,7 @@ level_data_start:
 
 	ALIGN $100
 avatar_sprite:
-	;.byte #0        ; zero padding, also clears register
+	ds 100,0
 	.byte #%00111100
 	.byte #%01000010
 	.byte #%11100111
@@ -253,6 +253,7 @@ avatar_sprite:
 	.byte #%01111110
 	.byte #%11000011
 	.byte #%10000001
+	ds 192-100-8,0
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left

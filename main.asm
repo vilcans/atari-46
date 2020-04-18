@@ -18,6 +18,7 @@ avatar_x ds 1
 ; Used in kernel
 rows_left ds 1
 vertical_shift ds 1
+level_color ds 1
 
 row_pf1l ds 1
 row_pf2l ds 1
@@ -187,22 +188,27 @@ game_frame:
 	jmp game_frame
 
 KERNEL SUBROUTINE
+; Kernel renders an "initialization" scanline followed by 7 "graphics" scanlines
 
 .enter_graphics:
 	REPEAT row_height_scanlines - 1  ; minus 1 because first row is initialization
 	sta WSYNC
 
-	lda avatar_sprite,y
-	sta GRP0
-
 	lda #0
 	sta PF0
 	lda row_pf1l
 	sta PF1
+
+	lda avatar_sprite,y
+	sta GRP0
+
+	lda level_color
+	sta COLUPF
+	sbc #2
+	sta level_color
+
 	lda row_pf2l
 	sta PF2
-
-	SLEEP 6
 
 	lda row_pf0r
 	sta PF0
@@ -220,7 +226,7 @@ KERNEL SUBROUTINE
 
 enter_kernel:
 	inx
-	sta WSYNC
+	;sta WSYNC
 
 	lda avatar_sprite,y
 	sta GRP0
@@ -240,6 +246,13 @@ enter_kernel:
 	sta row_pf2l
 	lda bitmap_pf0r,x
 	sta row_pf0r
+	asl
+	asl
+	asl
+	asl
+	ora #$e
+	sta level_color
+
 	lda bitmap_pf1r,x
 	sta row_pf1r
 	lda bitmap_pf2r,x

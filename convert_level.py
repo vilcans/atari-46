@@ -3,7 +3,7 @@
 import argparse
 import re
 
-line_with_color_re = re.compile(r'\s*([0123456789abcdef])')
+line_with_color_re = re.compile(r'([0123456789abcdef])\s$')
 
 parser = argparse.ArgumentParser(
     description='Convert level text to assembly source'
@@ -26,7 +26,7 @@ patterns = {}   # Map bits pattern to index in bitmaps
 current_color = 0
 
 for line in args.input:
-    m = line_with_color_re.match(line, pos=40)
+    m = line_with_color_re.search(line)
     if m:
         current_color = int(m.group(1), 16)
 

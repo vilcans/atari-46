@@ -7,6 +7,9 @@ row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
 number_of_visible_rows = (192 / row_height_scanlines) - 1
 
+invincibility_time = 120
+invincible_warning_time = 20
+
 	seg.u variables
 	org $80
 temp0 ds 1
@@ -14,6 +17,8 @@ temp0 ds 1
 position_lo	ds 1
 position_hi	ds 1
 avatar_x ds 1
+health ds 1
+invincible_count ds 1
 
 ; Used in kernel
 rows_left ds 1
@@ -50,6 +55,9 @@ main_start:
 
 	lda #88
 	sta avatar_x
+
+	lda #3
+	sta health
 
 game_frame:
 	lsr SWCHB ; test reset switch
@@ -122,8 +130,6 @@ game_frame:
 	sta WSYNC
 	sta HMOVE	; apply fine offsets
 
-	ldy #0   ; sprite counter
-
 	; Get level row from high resolution position
 	lda position_hi
 	sta temp0
@@ -155,8 +161,19 @@ game_frame:
 	tay
 	jsr shift_y_lines
 
-	ldy vertical_shift   ; sprite counter
-
+	lda invincible_count
+	beq .not_invincible
+	cmp #invincible_warning_time
+	bcs .broken
+	and #1
+	beq .not_invincible
+.broken:
+	lda #broken_avatar_sprite_offset
+.not_invincible:
+	clc
+	adc vertical_shift
+	tay
+	; y = sprite counter
 	jsr enter_kernel
 
 	sta WSYNC
@@ -178,14 +195,29 @@ game_frame:
 
 	TIMER_SETUP 29  ; NTSC: 30 lines overscan
 
+	ldx invincible_count
+	bne .invincible
+
 	lda CXP0FB
-	bpl .no_collision
-	lda #$3e
-	sta COLUBK
-.no_collision:
+	bpl .after_collision
+
+	ldx health
+	dex
+	stx health
+	beq .after_collision
+
+	lda #invincibility_time
+	sta invincible_count
+
+.after_collision:
 
 	TIMER_WAIT
 	jmp game_frame
+
+.invincible:
+	dex
+	stx invincible_count
+	jmp .after_collision
 
 KERNEL SUBROUTINE
 ; Kernel renders an "initialization" scanline followed by 7 "graphics" scanlines
@@ -314,6 +346,18 @@ avatar_sprite:
 	.byte #%01111110
 	.byte #%11000011
 	.byte #%10000001
+broken_avatar_sprite_offset = *-avatar_sprite
+
+	ds 100,0
+	.byte #%00010100
+	.byte #%01000010
+	.byte #%10100101
+	.byte #%10101010
+	.byte #%00010001
+	.byte #%00101010
+	.byte #%01000010
+	.byte #%10000001
+
 	ds 192-100-8,0
 
 bytes_left = $fffc-*

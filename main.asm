@@ -19,6 +19,15 @@ position	ds 1
 main_start:
 	CLEAN_START
 
+	.if 0
+	lda #$02    ; SCORE = different colors for left and right
+	sta CTRLPF
+	lda #$18
+	sta COLUP0
+	lda #$88
+	sta COLUP1
+	.endif
+
 game_frame:
 	lsr SWCHB ; test reset switch
 	bcc main_start
@@ -36,7 +45,7 @@ game_frame:
 
 	lda #$2f
 	sta COLUPF
-	lda #$00
+	lda #$04
 	sta COLUBK
 
 	; Check input
@@ -66,15 +75,21 @@ game_frame:
 
 	; Start of visible graphics
 	ldx #0
-	clc
 .each_scanline:
-	stx COLUBK
+	stx COLUPF
 
-	lda level_pf0,x
+	lda level_pf0l,x
 	sta PF0
-	lda level_pf1,x
+	lda level_pf1l,x
 	sta PF1
-	lda level_pf2,x
+	lda level_pf2l,x
+	sta PF2
+
+	lda level_pf0r,x
+	sta PF0
+	lda level_pf1r,x
+	sta PF1
+	lda level_pf2r,x
 	sta PF2
 
 	sta WSYNC

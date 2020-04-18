@@ -44,6 +44,9 @@ row_pf2r ds 1
 main_start:
 	CLEAN_START
 
+	lda #$1e
+	sta COLUP0
+
 	.if 0
 	lda #$02    ; SCORE = different colors for left and right
 	sta CTRLPF

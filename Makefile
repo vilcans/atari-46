@@ -15,4 +15,4 @@ run: $(PRODUCT).rom
 	stella $(PRODUCT).rom
 
 level.asm: level.txt convert_level.py
-	python3 convert_level.py $< $@
+	python3 convert_level.py -o $@ $<

@@ -173,20 +173,25 @@ game_frame:
 	sta PF1
 	sta PF2
 
-	lda level_pf0l,x
+	stx temp0
+
+	lda level,x
+	tax
+	lda bitmap_pf0l,x
 	sta row_pf0l
-	lda level_pf1l,x
+	lda bitmap_pf1l,x
 	sta row_pf1l
-	lda level_pf2l,x
+	lda bitmap_pf2l,x
 	sta row_pf2l
 
-	lda level_pf0r,x
+	lda bitmap_pf0r,x
 	sta row_pf0r
-	lda level_pf1r,x
+	lda bitmap_pf1r,x
 	sta row_pf1r
-	lda level_pf2r,x
+	lda bitmap_pf2r,x
 	sta row_pf2r
 
+	ldx temp0
 	iny
 
 .each_scanline:

@@ -29,8 +29,7 @@ for line in args.input:
     pf0r = sum(value << (4 + i) for i, value in enumerate(bits[20:24]))
     pf1r = sum(value << (7 - i) for i, value in enumerate(bits[24:32]))
     pf2r = sum(value << (0 + i) for i, value in enumerate(bits[32:40]))
-    for _ in range(4):
-        values.append((pf0l, pf1l, pf2l, pf0r, pf1r, pf2r))
+    values.append((pf0l, pf1l, pf2l, pf0r, pf1r, pf2r))
 
 out = args.output
 for pf in range(6):

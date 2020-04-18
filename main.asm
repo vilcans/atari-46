@@ -3,10 +3,16 @@
 	include "macro.h"
 	include "xmacro.h"
 
+row_height_bits = 2
+row_height_scanlines = 1 << row_height_bits
+
 	seg.u variables
 	org $80
-position	ds 1
+temp0 ds 1
+position_lo	ds 1
+position_hi	ds 1
 scanline_count ds 1
+scanlines_left_in_row ds 1
 	seg code
 	org  $f000
 
@@ -48,38 +54,74 @@ game_frame:
 	lda #$04
 	sta COLUBK
 
+	lda #$00
+	sta PF0
+	sta PF1
+	sta PF2
+
 	; Check input
+
+	ldy #0    ; delta
+	sty temp0  ; delta high byte
 
 	lda #$20  ; Down
 	bit SWCHA
 	bne .not_down
-	dec position
+	ldy #$ff
+	sty temp0
 .not_down:
 
 	lda #$10    ; Up
 	bit SWCHA
 	bne .not_up
-	inc position
+	iny
 .not_up:
+	tya
+	clc
+	adc position_lo
+	sta position_lo
+	lda position_hi
+	adc temp0  ; high byte
+	sta position_hi
 
 	lda INPT4
 	bmi .not_fire
 	lda #0
-	sta position
+	sta position_hi
+	sta position_lo
 .not_fire:
+
+	; Get level row from high resolution position
+
+	lda position_hi
+	sta temp0
+	lda position_lo
+
+	REPEAT row_height_bits
+	lsr temp0
+	ror
+	REPEND
+	tax    ; x = level row index
+
+	lda position_lo
+	and #row_height_scanlines-1
+	eor #row_height_scanlines-1
+	sta scanlines_left_in_row
 
 	; Wait for end of vblank
 	TIMER_WAIT
-	lda #0
+	;lda #0   ; already 0 from TIMER_WAIT
 	sta VBLANK
 
 	; Start of visible graphics
-	ldx position
 	lda #192
 	sta scanline_count
 
 .each_scanline:
+	sta WSYNC
 	stx COLUPF
+
+	SLEEP 3
 
 	lda level_pf0l,x
 	sta PF0
@@ -95,9 +137,14 @@ game_frame:
 	lda level_pf2r,x
 	sta PF2
 
+	dec scanlines_left_in_row
+	bpl .not_next_row
 	inx
+	lda #row_height_scanlines
+	sta scanlines_left_in_row
+.not_next_row:
+
 	dec scanline_count
-	sta WSYNC
 	bne .each_scanline
 
 	TIMER_SETUP 30  ; NTSC: 30 lines overscan

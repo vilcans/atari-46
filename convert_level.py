@@ -51,13 +51,30 @@ for line in args.input:
 
 out = args.o
 
-for pf in range(1, 6):
-    out.write('\tALIGN $100\n')
-    out.write('bitmap_pf{0}{1}:\n'.format(pf % 3, 'l' if pf < 3 else 'r'))
-    for index, value in enumerate(bitmaps):
-        out.write("\t.byte %{0:08b}  ; {1}\n".format(value[pf], index))
+address = 0
 
-out.write('\tALIGN $100\n')
-out.write('level:\n')
-for bitmap_ref in level:
-    out.write("\t.byte {0}\n".format(bitmap_ref))
+
+def write_source(label, values):
+    global address
+    bytecount = len(values)
+    align = (address & 0xff) + bytecount > 0x100
+    if align:
+        address = (address + 0xff) & 0xff00
+        out.write('\tALIGN $100\n')
+    print('{0}: {1} bytes at offset ${2:04x} to ${3:04x}{4}'.format(
+        label, bytecount, address, address + bytecount,
+        ' needs align' if align else '')
+    )
+    out.write(label + ':\n')
+    for index, value in enumerate(values):
+        out.write("\t.byte ${0:02x}  ; %{0:08b} {1}+${2:02x}\n".format(value, label, index))
+        address += 1
+
+
+for pf in range(1, 6):
+    write_source(
+        'bitmap_pf{0}{1}'.format(pf % 3, 'l' if pf < 3 else 'r'),
+        [value[pf] for value in bitmaps]
+    )
+
+write_source('level', level)

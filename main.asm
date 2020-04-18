@@ -401,27 +401,15 @@ level_data_start:
 	ALIGN $100
 avatar_sprite:
 	ds 100,0
-	.byte #%00111100
-	.byte #%01000010
-	.byte #%11100111
-	.byte #%11111111
-	.byte #%10011001
-	.byte #%01111110
-	.byte #%11000011
-	.byte #%10000001
+visible_sprite_start:
+	INCBIN "whale.dat"
+visible_sprite_height = *-visible_sprite_start
 broken_avatar_sprite_offset = *-avatar_sprite
 
 	ds 100,0
-	.byte #%00010100
-	.byte #%01000010
-	.byte #%10100101
-	.byte #%10101010
-	.byte #%00010001
-	.byte #%00101010
-	.byte #%01000010
-	.byte #%10000001
+	INCBIN "deadwhale.dat"
 
-	ds 192-100-8,0
+	ds 192-100-visible_sprite_height,0
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left

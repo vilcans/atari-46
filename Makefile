@@ -3,7 +3,7 @@ PRODUCT ?= game
 DASM = dasm
 
 SOURCES = main.asm level.asm
-RESOURCES =
+RESOURCES = whale.dat deadwhale.dat
 
 all: $(PRODUCT).rom
 
@@ -19,3 +19,6 @@ levels/%.txt: levels/%.json
 
 level.asm: levels/level01.txt convert_level.py
 	python3 convert_level.py -o $@ $<
+
+%.dat: %.png
+	python3 convert_image.py $< $@

@@ -10,12 +10,20 @@ number_of_visible_rows = (192 / row_height_scanlines) - 1
 invincibility_time = 120
 invincible_warning_time = 20
 
+gravity = 2
+
 	seg.u variables
 	org $80
 temp0 ds 1
 
+position_frac ds 1
 position_lo	ds 1
 position_hi	ds 1
+
+velocity_y_frac ds 1
+velocity_y_lo ds 1
+velocity_y_hi ds 1
+
 avatar_x ds 1
 health ds 1
 invincible_count ds 1
@@ -93,8 +101,8 @@ game_frame:
 
 	; Check input
 
-	ldy #0    ; delta
-	sty temp0  ; delta high byte
+;	ldy #0    ; delta
+;	sty temp0  ; delta high byte
 
 	lda SWCHA
 	asl
@@ -105,22 +113,28 @@ game_frame:
 	bcs .not_left
 	dec avatar_x
 .not_left:
-	asl
-	bcs .not_down
-	iny
-.not_down:
-	asl
-	bcs .not_up
-	ldy #$ff
-	sty temp0
-.not_up:
 
-	tya
+;	asl
+;	bcs .not_down
+;	iny
+;.not_down:
+;	asl
+;	bcs .not_up
+;	ldy #$ff
+;	sty temp0
+;.not_up:
+
 	clc
-	adc position_lo
+	lda position_frac
+	adc velocity_y_frac
+	sta position_frac
+
+	lda position_lo
+	adc velocity_y_lo
 	sta position_lo
+
 	lda position_hi
-	adc temp0  ; high byte
+	adc velocity_y_hi
 	sta position_hi
 
 	lda INPT4
@@ -227,6 +241,17 @@ game_frame:
 	sta invincible_count
 
 .after_collision:
+
+	clc
+	lda velocity_y_frac
+	adc #gravity
+	sta velocity_y_frac
+	lda velocity_y_lo
+	adc #0
+	sta velocity_y_lo
+	lda velocity_y_hi
+	adc #0
+	sta velocity_y_hi
 
 	TIMER_WAIT
 	jmp game_frame

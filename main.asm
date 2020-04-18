@@ -80,18 +80,25 @@ game_frame:
 	ldy #0    ; delta
 	sty temp0  ; delta high byte
 
-	lda #$20  ; Down
-	bit SWCHA
-	bne .not_down
+	lda SWCHA
+	asl
+	bcs .not_right
+	inc avatar_x
+.not_right:
+	asl
+	bcs .not_left
+	dec avatar_x
+.not_left:
+	asl
+	bcs .not_down
 	ldy #$ff
 	sty temp0
 .not_down:
-
-	lda #$10    ; Up
-	bit SWCHA
-	bne .not_up
+	asl
+	bcs .not_up
 	iny
 .not_up:
+
 	tya
 	clc
 	adc position_lo

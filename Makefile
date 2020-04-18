@@ -14,5 +14,8 @@ $(PRODUCT).rom: $(SOURCES) $(RESOURCES)
 run: $(PRODUCT).rom
 	stella $(PRODUCT).rom
 
-level.asm: level.txt convert_level.py
+levels/%.txt: levels/%.json
+	python3 tiles_to_text.py $<
+
+level.asm: levels/level01.txt convert_level.py
 	python3 convert_level.py -o $@ $<

@@ -32,6 +32,8 @@ avatar_x ds 1
 health ds 1
 invincible_count ds 1
 
+sprite_counter ds 1   ; temp
+
 ; Used in kernel
 rows_left ds 1
 vertical_shift ds 1
@@ -175,25 +177,16 @@ game_frame:
 	lda #number_of_visible_rows
 	sta rows_left
 
-	sta CXCLR  ; clear collisions
-
-	; Wait for end of vblank
-	TIMER_WAIT
-	;lda #0   ; already 0 from TIMER_WAIT
-	sta VBLANK
-
-	; Start of visible graphics
-
-	; Shift display for scrolling
+	; Calculate vertical shift for scrolling
 	lda position_lo
 	and #row_height_scanlines-1
 	eor #row_height_scanlines-1  ; how many scanlines to shift down
 	sta vertical_shift
-	tay
-	jsr shift_y_lines
 
-	; Invincibility and flash visuals
+	; Invincibility and flash visuals, and calculate sprite position
 
+	lda #$f0
+	sta COLUBK
 	lda invincible_count
 	beq .not_invincible
 
@@ -213,8 +206,20 @@ game_frame:
 .not_invincible:
 	clc
 	adc vertical_shift
-	tay
-	; y = sprite counter
+	sta sprite_counter
+
+	sta CXCLR  ; clear collisions
+
+	; Wait for end of vblank
+	TIMER_WAIT
+	;lda #0   ; already 0 from TIMER_WAIT
+	sta VBLANK
+
+	; Start of visible graphics
+
+	ldy vertical_shift
+	jsr shift_y_lines
+	ldy sprite_counter
 	jsr enter_kernel
 
 	sta WSYNC

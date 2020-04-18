@@ -5,7 +5,7 @@
 
 row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
-number_of_visible_rows = 23
+number_of_visible_rows = (192 / row_height_scanlines) - 1
 
 	seg.u variables
 	org $80

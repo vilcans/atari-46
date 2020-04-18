@@ -139,6 +139,8 @@ game_frame:
 	lda #number_of_visible_rows
 	sta rows_left
 
+	sta CXCLR  ; clear collisions
+
 	; Wait for end of vblank
 	TIMER_WAIT
 	;lda #0   ; already 0 from TIMER_WAIT
@@ -234,6 +236,12 @@ game_frame:
 	sta COLUBK
 
 	TIMER_SETUP 29  ; NTSC: 30 lines overscan
+
+	lda CXP0FB
+	bpl .no_collision
+	lda #$3e
+	sta COLUBK
+.no_collision:
 
 	TIMER_WAIT
 	jmp game_frame

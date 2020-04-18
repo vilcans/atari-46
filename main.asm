@@ -3,7 +3,7 @@
 	include "macro.h"
 	include "xmacro.h"
 
-row_height_bits = 2
+row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
 
 	seg.u variables

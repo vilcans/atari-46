@@ -16,7 +16,6 @@ position_hi	ds 1
 avatar_x ds 1
 
 ; Used in kernel
-scanlines_left_in_row ds 1
 rows_left ds 1
 vertical_shift ds 1
 
@@ -157,67 +156,7 @@ game_frame:
 
 	ldy vertical_shift   ; sprite counter
 
-.each_row:
-	inx
-	lda #row_height_scanlines-1   ; minus 1 because first row is initialization
-	sta scanlines_left_in_row
-
-	sta WSYNC
-
-	lda avatar_sprite,y
-	sta GRP0
-
-	lda #0
-	sta PF0
-	sta PF1
-	sta PF2
-
-	stx temp0
-
-	lda level,x
-	tax
-	lda bitmap_pf1l,x
-	sta row_pf1l
-	lda bitmap_pf2l,x
-	sta row_pf2l
-	lda bitmap_pf0r,x
-	sta row_pf0r
-	lda bitmap_pf1r,x
-	sta row_pf1r
-	lda bitmap_pf2r,x
-	sta row_pf2r
-
-	ldx temp0
-	iny
-
-.each_scanline:
-	sta WSYNC
-
-	lda avatar_sprite,y
-	sta GRP0
-
-	lda #0
-	sta PF0
-	lda row_pf1l
-	sta PF1
-	lda row_pf2l
-	sta PF2
-
-	SLEEP 6
-
-	lda row_pf0r
-	sta PF0
-	lda row_pf1r
-	sta PF1
-	lda row_pf2r
-	sta PF2
-
-	iny  ; next sprite pointer
-
-	dec scanlines_left_in_row
-	bne .each_scanline
-	dec rows_left
-	bne .each_row
+	jsr enter_kernel
 
 	sta WSYNC
 
@@ -246,6 +185,73 @@ game_frame:
 
 	TIMER_WAIT
 	jmp game_frame
+
+KERNEL SUBROUTINE
+
+.enter_graphics:
+	REPEAT row_height_scanlines - 1  ; minus 1 because first row is initialization
+	sta WSYNC
+
+	lda avatar_sprite,y
+	sta GRP0
+
+	lda #0
+	sta PF0
+	lda row_pf1l
+	sta PF1
+	lda row_pf2l
+	sta PF2
+
+	SLEEP 6
+
+	lda row_pf0r
+	sta PF0
+	lda row_pf1r
+	sta PF1
+	lda row_pf2r
+	sta PF2
+
+	iny  ; next sprite pointer
+
+	REPEND
+
+	dec rows_left
+	beq .end
+
+enter_kernel:
+	inx
+	sta WSYNC
+
+	lda avatar_sprite,y
+	sta GRP0
+
+	lda #0
+	sta PF0
+	sta PF1
+	sta PF2
+
+	stx temp0
+
+	lda level,x
+	tax
+	lda bitmap_pf1l,x
+	sta row_pf1l
+	lda bitmap_pf2l,x
+	sta row_pf2l
+	lda bitmap_pf0r,x
+	sta row_pf0r
+	lda bitmap_pf1r,x
+	sta row_pf1r
+	lda bitmap_pf2r,x
+	sta row_pf2r
+
+	ldx temp0
+	iny
+	jmp .enter_graphics
+.end:
+	rts
+
+UTILITIES SUBROUTINE
 
 ; SetHorizPos routine
 ; Based on 8bitworkshop's SetHorizPos
@@ -277,6 +283,8 @@ shift_y_lines:
 .end_shift:
 	rts
 
+DATA SUBROUTINE
+
 level_data_start:
 	ALIGN $100
 	.include "level.asm"
@@ -298,6 +306,7 @@ avatar_sprite:
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left
 
+VECTORS SUBROUTINE
 	org $fffc
 	.word main_start
 	.word main_start

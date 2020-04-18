@@ -6,7 +6,7 @@
 	seg.u variables
 	org $80
 position	ds 1
-
+scanline_count ds 1
 	seg code
 	org  $f000
 
@@ -74,7 +74,10 @@ game_frame:
 	sta VBLANK
 
 	; Start of visible graphics
-	ldx #0
+	ldx position
+	lda #192
+	sta scanline_count
+
 .each_scanline:
 	stx COLUPF
 
@@ -92,9 +95,9 @@ game_frame:
 	lda level_pf2r,x
 	sta PF2
 
-	sta WSYNC
 	inx
-	cpx #192
+	dec scanline_count
+	sta WSYNC
 	bne .each_scanline
 
 	TIMER_SETUP 30  ; NTSC: 30 lines overscan

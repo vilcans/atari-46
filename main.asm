@@ -49,7 +49,7 @@ main_start:
 	sta COLUP1
 	.endif
 
-	lda #40
+	lda #88
 	sta avatar_x
 
 game_frame:

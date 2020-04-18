@@ -1,0 +1,8 @@
+...................x
+.x................xx
+..x..............xxx
+...xxxxx.....xxxxxxx
+.......x.....xxxxxxx
+xxxxxxxx.....xxxxxxx
+xxxxxxxx.....xx.....
+....xxxxxxxx........

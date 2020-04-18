@@ -65,14 +65,21 @@ game_frame:
 	sta VBLANK
 
 	; Start of visible graphics
-	ldx #192
-	lda position
+	ldx #0
 	clc
 .each_scanline:
-	sta COLUBK
-	adc #1
+	stx COLUBK
+
+	lda level_pf0,x
+	sta PF0
+	lda level_pf1,x
+	sta PF1
+	lda level_pf2,x
+	sta PF2
+
 	sta WSYNC
-	dex
+	inx
+	cpx #192
 	bne .each_scanline
 
 	TIMER_SETUP 30  ; NTSC: 30 lines overscan
@@ -82,6 +89,8 @@ game_frame:
 
 	TIMER_WAIT
 	jmp game_frame
+
+	.include "level.asm"
 
 	org $fffc
 	.word main_start

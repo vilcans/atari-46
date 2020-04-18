@@ -10,6 +10,9 @@ number_of_visible_rows = (192 / row_height_scanlines) - 1
 invincibility_time = 220
 invincible_warning_time = 20
 
+min_x = 32-4
+max_x = min_x + 15 * 8 - 4
+
 gravity = 3
 collision_bounce_velocity = -2
 
@@ -108,10 +111,16 @@ game_frame:
 	lda SWCHA
 	asl
 	bcs .not_right
+	ldx avatar_x
+	cpx #max_x
+	bcs .not_right
 	inc avatar_x
 .not_right:
 	asl
 	bcs .not_left
+	ldx avatar_x
+	cpx #min_x
+	bcc .not_left
 	dec avatar_x
 .not_left:
 

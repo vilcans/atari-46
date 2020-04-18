@@ -18,6 +18,14 @@ avatar_x ds 1
 scanline_count ds 1
 scanlines_left_in_row ds 1
 
+row_pf0l ds 1
+row_pf1l ds 1
+row_pf2l ds 1
+row_pf0r ds 1
+row_pf1r ds 1
+row_pf2r ds 1
+
+
 	seg code
 	org  $f000
 
@@ -118,21 +126,59 @@ game_frame:
 	REPEND
 	tax    ; x = level row index
 
-	lda position_lo
-	and #row_height_scanlines-1
-	eor #row_height_scanlines-1
-	sta scanlines_left_in_row
+	lda #192
+	sta scanline_count
 
 	; Wait for end of vblank
 	TIMER_WAIT
 	;lda #0   ; already 0 from TIMER_WAIT
 	sta VBLANK
 
-	; Start of visible graphics
-	lda #192
-	sta scanline_count
+	;TIMER_SETUP 192
 
-	ldy #0
+
+	; Start of visible graphics
+	ldy #0   ; sprite counter
+
+	lda position_lo
+	and #row_height_scanlines-1
+	eor #row_height_scanlines-1
+	sta scanlines_left_in_row
+	bne .each_row
+
+.next_row:
+	inx
+	lda #row_height_scanlines-1
+	sta scanlines_left_in_row
+.each_row:
+	sta WSYNC
+
+	lda avatar_sprite,y
+	sta GRP0
+
+	lda #0
+	sta PF0
+	sta PF1
+	sta PF2
+
+	lda level_pf0l,x
+	sta row_pf0l
+	lda level_pf1l,x
+	sta row_pf1l
+	lda level_pf2l,x
+	sta row_pf2l
+
+	lda level_pf0r,x
+	sta row_pf0r
+	lda level_pf1r,x
+	sta row_pf1r
+	lda level_pf2r,x
+	sta row_pf2r
+
+	iny
+	dec scanline_count
+	beq .end
+
 .each_scanline:
 	sta WSYNC
 	stx COLUPF
@@ -140,31 +186,29 @@ game_frame:
 	lda avatar_sprite,y
 	sta GRP0
 
-	;lda level_pf0l,x
-	;sta PF0
-	lda level_pf1l,x
+	lda row_pf0l
+	sta PF0
+	lda row_pf1l
 	sta PF1
-	lda level_pf2l,x
+	lda row_pf2l
 	sta PF2
 
-	lda level_pf0r,x
+	lda row_pf0r
 	sta PF0
-	lda level_pf1r,x
+	lda row_pf1r
 	sta PF1
-	lda level_pf2r,x
+	lda row_pf2r
 	sta PF2
 
 	iny  ; next sprite pointer
 
-	dec scanlines_left_in_row
-	bpl .not_next_row
-	inx
-	lda #row_height_scanlines
-	sta scanlines_left_in_row
-.not_next_row:
-
 	dec scanline_count
+	beq .end
+
+	dec scanlines_left_in_row
+	beq .next_row
 	bne .each_scanline
+.end:
 
 	TIMER_SETUP 30  ; NTSC: 30 lines overscan
 

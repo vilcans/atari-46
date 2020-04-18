@@ -193,6 +193,9 @@ game_frame:
 	sta WSYNC
 	stx COLUPF
 
+	lda avatar_sprite,y
+	sta GRP0
+
 	lda row_pf0l
 	sta PF0
 	lda row_pf1l
@@ -200,8 +203,6 @@ game_frame:
 	lda row_pf2l
 	sta PF2
 
-	lda avatar_sprite,y
-	sta GRP0
 	nop
 
 	lda row_pf0r

@@ -7,10 +7,11 @@ row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
 number_of_visible_rows = (192 / row_height_scanlines) - 1
 
-invincibility_time = 120
+invincibility_time = 220
 invincible_warning_time = 20
 
-gravity = 2
+gravity = 3
+collision_bounce_velocity = -2
 
 	seg.u variables
 	org $80
@@ -231,6 +232,12 @@ game_frame:
 
 	lda CXP0FB
 	bpl .after_collision
+
+	lda #collision_bounce_velocity
+	sta velocity_y_lo
+	lda #$ff
+	sta velocity_y_frac
+	sta velocity_y_hi
 
 	ldx health
 	dex

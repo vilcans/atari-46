@@ -107,12 +107,12 @@ game_frame:
 .not_left:
 	asl
 	bcs .not_down
-	ldy #$ff
-	sty temp0
+	iny
 .not_down:
 	asl
 	bcs .not_up
-	iny
+	ldy #$ff
+	sty temp0
 .not_up:
 
 	tya

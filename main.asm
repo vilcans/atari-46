@@ -221,7 +221,10 @@ game_frame:
 	TIMER_SETUP 30  ; NTSC: 30 lines overscan
 
 	lda #$00
-	sta COLUPF
+	sta COLUBK
+	sta PF0
+	sta PF1
+	sta PF2
 
 	TIMER_WAIT
 	jmp game_frame

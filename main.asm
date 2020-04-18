@@ -20,7 +20,6 @@ scanlines_left_in_row ds 1
 rows_left ds 1
 vertical_shift ds 1
 
-row_pf0l ds 1
 row_pf1l ds 1
 row_pf2l ds 1
 row_pf0r ds 1
@@ -177,13 +176,10 @@ game_frame:
 
 	lda level,x
 	tax
-	lda bitmap_pf0l,x
-	sta row_pf0l
 	lda bitmap_pf1l,x
 	sta row_pf1l
 	lda bitmap_pf2l,x
 	sta row_pf2l
-
 	lda bitmap_pf0r,x
 	sta row_pf0r
 	lda bitmap_pf1r,x
@@ -196,19 +192,18 @@ game_frame:
 
 .each_scanline:
 	sta WSYNC
-	stx COLUPF
 
 	lda avatar_sprite,y
 	sta GRP0
 
-	lda row_pf0l
+	lda #0
 	sta PF0
 	lda row_pf1l
 	sta PF1
 	lda row_pf2l
 	sta PF2
 
-	nop
+	SLEEP 6
 
 	lda row_pf0r
 	sta PF0

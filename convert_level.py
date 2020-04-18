@@ -27,21 +27,20 @@ for line in args.input:
         for char in line
     )
     if bits not in patterns:
-        pf0l = sum(value << (4 + i) for i, value in enumerate(bits[ 0: 4]))
-        pf1l = sum(value << (7 - i) for i, value in enumerate(bits[ 4:12]))
-        pf2l = sum(value << (0 + i) for i, value in enumerate(bits[12:20]))
-        pf0r = sum(value << (4 + i) for i, value in enumerate(bits[20:24]))
-        pf1r = sum(value << (7 - i) for i, value in enumerate(bits[24:32]))
-        pf2r = sum(value << (0 + i) for i, value in enumerate(bits[32:40]))
+        pf1l = sum(value << (7 - i) for i, value in enumerate(bits[ 0: 8]))
+        pf2l = sum(value << (0 + i) for i, value in enumerate(bits[ 8:16]))
+        pf0r = sum(value << (4 + i) for i, value in enumerate(bits[16:20]))
+        pf1r = sum(value << (7 - i) for i, value in enumerate(bits[20:28]))
+        pf2r = sum(value << (0 + i) for i, value in enumerate(bits[28:36]))
 
         patterns[bits] = len(bitmaps)
-        bitmaps.append((pf0l, pf1l, pf2l, pf0r, pf1r, pf2r))
+        bitmaps.append((None, pf1l, pf2l, pf0r, pf1r, pf2r))
 
     level.append(patterns[bits])
 
 out = args.o
 
-for pf in range(6):
+for pf in range(1, 6):
     out.write('\tALIGN $100\n')
     out.write('bitmap_pf{0}{1}:\n'.format(pf % 3, 'l' if pf < 3 else 'r'))
     for index, value in enumerate(bitmaps):

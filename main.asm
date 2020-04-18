@@ -155,7 +155,12 @@ game_frame:
 	TIMER_WAIT
 	jmp game_frame
 
+level_data_start:
 	.include "level.asm"
+	echo "Size of levels:", *-level_data_start
+
+bytes_left = $fffc-*
+	echo "Bytes left:", bytes_left
 
 	org $fffc
 	.word main_start

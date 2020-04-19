@@ -174,13 +174,6 @@ game_frame:
 	adc velocity_y_hi
 	sta position_hi
 
-	lda INPT4
-	bmi .not_fire
-	lda #0
-	sta position_hi
-	sta position_lo
-.not_fire:
-
 	; Set avatar position
 	lda avatar_x
 	ldx #0		; player 0

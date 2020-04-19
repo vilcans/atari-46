@@ -187,6 +187,11 @@ game_frame:
 
 	lda position_hi
 	adc velocity_y_hi
+
+	bpl .no_top_clamp
+	lda #0
+	sta position_lo
+.no_top_clamp:
 	sta position_hi
 
 	; Set avatar position

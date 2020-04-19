@@ -243,6 +243,8 @@ game_frame:
 	lda invincible_count
 	cmp #invincible_warning_time
 	bcs .broken
+	ldy health
+	beq .broken
 	and #1
 	beq .not_invincible
 .broken:

@@ -22,6 +22,13 @@ starting_health = 3
 gravity = 3
 collision_bounce_velocity = -2
 
+water_color = $92
+whale_color = $1e
+underwater_whale_color = $10
+
+; When position is this, the whale hits the water
+water_surface_position = ($100 - number_of_visible_rows) * row_height_scanlines + (192 - sprite_screen_y - visible_sprite_height)
+
 	seg.u variables
 	org $80
 
@@ -40,6 +47,7 @@ velocity_y_hi ds 1
 avatar_x ds 1
 health ds 1
 invincible_count ds 1
+success_counter ds 1  ; how many frames since success
 
 zp_clear_end:
 
@@ -78,9 +86,6 @@ game_start:
 	inx
 	cpx #zp_clear_end-zp_clear_start
 	bne .each_zp_byte
-
-	lda #$1e
-	sta COLUP0
 
 	lda #$5-1
 	sta AUDF0
@@ -122,8 +127,8 @@ game_frame:
 	lda #0
 	sta VSYNC
 
-	lda #$2f
-	sta COLUPF
+	lda #whale_color
+	sta COLUP0
 
 	lda #$00
 	sta COLUBK
@@ -182,6 +187,10 @@ game_frame:
 	sta WSYNC
 	sta HMOVE	; apply fine offsets
 
+	; Default background color
+	lda #$02
+	sta COLUBK
+
 	; Get level row from high resolution position
 	lda position_hi
 	sta temp0
@@ -191,6 +200,12 @@ game_frame:
 	lsr temp0
 	ror
 	REPEND
+	ldx temp0
+	beq .no_row_clamp
+	lda #water_color
+	sta COLUBK
+	lda #$ff
+.no_row_clamp:
 	sta level_row
 
 	lda #number_of_visible_rows
@@ -203,9 +218,6 @@ game_frame:
 	sta vertical_shift
 
 	; Invincibility and flash visuals, and calculate sprite position
-
-	lda #$02
-	sta COLUBK
 
 	lda #>avatar_sprite
 	sta sprite_ptr_hi
@@ -269,12 +281,14 @@ game_frame:
 
 	TIMER_SETUP 29  ; NTSC: 30 lines overscan
 
-	lsr SWCHB ; test reset switch
-	bcc game_reset
-
 	ldx invincible_count
 	bne .invincible
 
+	lda level_row
+	cmp #$ff  ; clamped to this by kernel
+	beq .test_water
+
+.skip_water:
 	lda CXP0FB
 	bpl .after_collision
 
@@ -306,8 +320,41 @@ game_frame:
 	adc #0
 	sta velocity_y_hi
 
+.after_gravity:
+	lsr SWCHB ; test reset switch
+	bcc game_reset
+
 	TIMER_WAIT
 	jmp game_frame
+
+.invincible:
+	dex
+	beq .invincibility_ended
+	stx invincible_count
+	jmp .after_collision
+
+.test_water:
+	lda position_lo
+	cmp #<water_surface_position
+	bcc .skip_water
+
+	lda position_hi
+	cmp #>water_surface_position
+	bcc .skip_water
+
+	lda #0
+	sta velocity_y_hi
+	sta velocity_y_lo
+	lda #$80
+	sta velocity_y_frac
+
+;	lda success_counter
+;	bne .skip_splash
+	; TODO: Play splash
+;.skip_splash:
+	inc success_counter
+	bne .after_gravity
+	beq intro_start_in_overscan
 
 .on_death_collision:
 	lda #$02    ; SCORE = different colors for left and right
@@ -318,12 +365,6 @@ game_frame:
 	lda #invincibility_time_final
 	jmp .after_on_death
 
-.invincible:
-	dex
-	beq .invincibility_ended
-	stx invincible_count
-	jmp .after_collision
-
 .invincibility_ended:
 	lda health
 	beq game_over
@@ -332,6 +373,7 @@ game_frame:
 
 game_over:
 game_reset:
+intro_start_in_overscan:  ; Enter into with an active timer for overscan
 	TIMER_WAIT
 	jmp intro_start
 
@@ -401,6 +443,7 @@ enter_kernel:
 
 	ldx level_row
 	inx
+	beq .level_row_overflow
 	stx level_row
 	lda level,x
 	tax
@@ -425,6 +468,15 @@ enter_kernel:
 	jmp .enter_graphics
 .end:
 	rts
+
+.level_row_overflow:
+	lda #water_color
+	sta COLUBK
+	lda #underwater_whale_color
+	sta COLUP0
+	;iny  ; Skipping this makes the shark wobble - nice!
+	SLEEP 20  ; Makes it take about the same time as without overflow
+	jmp .enter_graphics
 
 UTILITIES SUBROUTINE
 

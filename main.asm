@@ -463,18 +463,16 @@ enter_kernel:
 	sta row_pf1l
 	lda bitmap_pf2l,x
 	sta row_pf2l
-	lda bitmap_pf0r,x
-	sta row_pf0r
-	asl
-	asl
-	asl
-	asl
-	sta level_color
-
 	lda bitmap_pf1r,x
 	sta row_pf1r
 	lda bitmap_pf2r,x
 	sta row_pf2r
+	lda bitmap_pf0r,x
+	sta row_pf0r
+
+	tax  ; 2c
+	lda color_table,x  ; 4c
+	sta level_color
 
 	ldy save_sprite_count   ; restore
 	iny
@@ -534,6 +532,13 @@ shift_y_lines:
 	rts
 
 DATA SUBROUTINE
+
+	ALIGN $100
+color_table:   ; Map color index in lowest 4 bits.
+	REPEAT $10
+	; Right now just a rol 4 lookup table
+	.byte $00,$10,$20,$30,$40,$50,$60,$70,$80,$90,$a0,$b0,$c0,$d0,$e0,$f0
+	REPEND
 
 	ALIGN $100
 level_data_start:

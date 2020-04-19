@@ -128,15 +128,14 @@ game_frame:
 
 	; Check input
 
-;	ldy #0    ; delta
-;	sty temp0  ; delta high byte
-
+	lda health
+	beq .move_done
 	lda SWCHA
 	asl
 	bcs .not_right
 	ldx avatar_x
 	cpx #max_x
-	bcs .not_right
+	bcs .move_done
 	inc avatar_x
 .not_right:
 	asl
@@ -146,6 +145,7 @@ game_frame:
 	bcc .not_left
 	dec avatar_x
 .not_left:
+.move_done:
 
 ;	asl
 ;	bcs .not_down

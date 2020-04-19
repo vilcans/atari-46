@@ -49,6 +49,7 @@ row_pf0r ds 1
 row_pf1r ds 1
 row_pf2r ds 1
 
+	ECHO "Zero page used up to", *, "=", *-$80, "bytes"
 
 	seg code
 	org  $f000

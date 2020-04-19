@@ -352,13 +352,13 @@ scanline_in_row SET 1   ; because row 0 is initialization
 	lda (sprite_ptr),y
 	sta GRP0
 
-	set_color_on_line 1, scanline_in_row, $e
-	set_color_on_line 2, scanline_in_row, $c-1
-	set_color_on_line 3, scanline_in_row, $a-1
-	set_color_on_line 4, scanline_in_row, $8-1
-	set_color_on_line 5, scanline_in_row, $6-1
-	set_color_on_line 6, scanline_in_row, $4-1
-	set_color_on_line 7, scanline_in_row, $2-1
+	set_color_on_line 1, scanline_in_row, 6 * 2
+	set_color_on_line 2, scanline_in_row, 7 * 2
+	set_color_on_line 3, scanline_in_row, 6 * 2
+	set_color_on_line 4, scanline_in_row, 5 * 2
+	set_color_on_line 5, scanline_in_row, 4 * 2
+	set_color_on_line 6, scanline_in_row, 3 * 2
+	set_color_on_line 7, scanline_in_row, 1 * 2
 
 	lda row_pf2l
 	sta PF2

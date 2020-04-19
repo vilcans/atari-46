@@ -438,15 +438,17 @@ scanline_in_row SET scanline_in_row + 1
 	beq .end
 
 enter_kernel:
+; "init" scanline is the first. Doesn't display graphics, but reads the data from the level.
+
 	;sta WSYNC
 
 	lda (sprite_ptr),y
 	sta GRP0
 
 	lda #0
-	sta PF0
-	sta PF1
-	sta PF2
+	sta PF0   ; 3c
+	sta PF1   ; 3c
+	sta PF2   ; 3c
 
 	sty save_sprite_count  ; save it temporarily
 

@@ -484,6 +484,7 @@ UTILITIES SUBROUTINE
 ; Based on 8bitworkshop's SetHorizPos
 ; A = X coordinate
 ; X = player number (0 or 1)
+	ALIGN $8   ; Avoid loop spanning page
 set_x_pos:
 	sta WSYNC	; start a new line
 	sec		; set carry flag

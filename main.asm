@@ -133,6 +133,10 @@ game_frame:
 	jsr start_frame
 
 	lda #whale_color
+	ldx health
+	bne .not_dead_color
+	lda #0
+.not_dead_color:
 	sta COLUP0
 
 	lda #$00
@@ -358,10 +362,9 @@ exit_kernel:
 	beq intro_start_in_overscan
 
 .on_death_collision:
-	lda #$02    ; SCORE = different colors for left and right
+	lda #$02    ; SCORE = Use COLUP0 and COLUP1 for playfields, so they become black
 	sta CTRLPF
 	lda #$00
-	sta COLUP0
 	sta COLUP1
 	lda #invincibility_time_final
 	jmp .after_on_death

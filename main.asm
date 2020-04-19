@@ -14,6 +14,7 @@ sprite_screen_y = 40
 
 min_x = 32-4
 max_x = min_x + 15 * 8 - 4
+starting_x = (max_x + min_x) / 2
 
 gravity = 3
 collision_bounce_velocity = -2
@@ -91,7 +92,7 @@ game_start:
 	sta COLUP1
 	.endif
 
-	lda #88
+	lda #starting_x
 	sta avatar_x
 
 	lda #3

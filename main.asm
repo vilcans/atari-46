@@ -16,6 +16,8 @@ min_x = 32-4
 max_x = min_x + 15 * 8 - 4
 starting_x = (max_x + min_x) / 2
 
+starting_health = 3
+
 gravity = 3
 collision_bounce_velocity = -2
 
@@ -95,7 +97,7 @@ game_start:
 	lda #starting_x
 	sta avatar_x
 
-	lda #3
+	lda #starting_health
 	sta health
 
 	lda #>avatar_sprite

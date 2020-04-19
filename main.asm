@@ -185,7 +185,7 @@ game_frame:
 
 	; Invincibility and flash visuals, and calculate sprite position
 
-	lda #$f0
+	lda #$02
 	sta COLUBK
 	lda invincible_count
 	beq .not_invincible

@@ -20,6 +20,9 @@ collision_bounce_velocity = -2
 
 	seg.u variables
 	org $80
+
+zp_clear_start:
+
 temp0 ds 1
 
 position_frac ds 1
@@ -33,6 +36,8 @@ velocity_y_hi ds 1
 avatar_x ds 1
 health ds 1
 invincible_count ds 1
+
+zp_clear_end:
 
 sprite_ptr ds 2
 sprite_ptr_hi = sprite_ptr+1
@@ -60,8 +65,14 @@ row_pf2r ds 1
 ; 30 scanlines overscan
 ; Total: 262 scanlines
 
-main_start:
-	CLEAN_START
+game_start:
+	lda #0
+	tax
+.each_zp_byte:
+	sta zp_clear_start,x
+	inx
+	cpx #zp_clear_end-zp_clear_start
+	bne .each_zp_byte
 
 	lda #$1e
 	sta COLUP0
@@ -92,9 +103,6 @@ main_start:
 	sta sprite_ptr_lo
 
 game_frame:
-	lsr SWCHB ; test reset switch
-	bcc main_start
-
 	TIMER_SETUP 40   ;NTSC: 40 lines vblank
 
 	lda #2
@@ -213,12 +221,19 @@ game_frame:
 	lda invincible_count
 	cmp #invincible_warning_time
 	bcs .broken
+	ldy health
+	beq .hidden
 	and #1
 	beq .not_invincible
 .broken:
 	lda #>broken_sprite
 	sta sprite_ptr_hi
+	jmp .invincibility_done
+.hidden:
+	lda #>gameover_sprite
+	sta sprite_ptr_hi
 .not_invincible:
+.invincibility_done
 
 	sta CXCLR  ; clear collisions
 
@@ -253,6 +268,9 @@ game_frame:
 
 	TIMER_SETUP 29  ; NTSC: 30 lines overscan
 
+	lsr SWCHB ; test reset switch
+	bcc game_reset
+
 	ldx invincible_count
 	bne .invincible
 
@@ -268,13 +286,13 @@ game_frame:
 	ldx health
 	dex
 	stx health
-	beq .after_collision
 
 	lda #invincibility_time
 	sta invincible_count
 
 .after_collision:
 
+	; Apply gravity to velocity. Skipped if game over.
 	clc
 	lda velocity_y_frac
 	adc #gravity
@@ -291,8 +309,20 @@ game_frame:
 
 .invincible:
 	dex
+	beq .invincibility_ended
 	stx invincible_count
 	jmp .after_collision
+
+.invincibility_ended:
+	lda health
+	beq game_over
+	stx invincible_count
+	jmp .after_collision
+
+game_over:
+game_reset:
+	TIMER_WAIT
+	jmp intro_start
 
 KERNEL SUBROUTINE
 ; Kernel renders an "initialization" scanline followed by 7 "graphics" scanlines
@@ -392,6 +422,13 @@ DivideLoop
 	sta HMP0,x	; set fine offset
 	rts		; return to caller
 
+MAIN SUBROUTINE
+main_start:
+	CLEAN_START
+intro_start:
+
+	jmp game_start
+
 ; Delay Y scanlines.
 ; Zero flag must correspond to the value in Y before call.
 shift_y_lines:
@@ -433,6 +470,10 @@ broken_sprite:
 	ECHO "Must fit on page"
 	ERROR
 	ENDIF
+
+	ALIGN $100
+gameover_sprite:
+	ds 192,0
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left

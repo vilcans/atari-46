@@ -27,7 +27,7 @@ for in_file in args.input:
         row_color = None
         warn = False
         for col in range(width):
-            tile = data[col + row * width]
+            tile = data[col + row * width] & 0x1fffffff
             if 1 <= tile <= 16:
                 bits.append(1)
                 tile_color = tile - 1

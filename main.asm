@@ -19,7 +19,7 @@ min_x = 32-4
 max_x = min_x + 15 * 8 - 4
 starting_x = (max_x + min_x) / 2
 
-starting_health = 3
+starting_health = 2
 
 gravity = 3
 collision_bounce_velocity = -2

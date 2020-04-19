@@ -36,6 +36,8 @@ zp_clear_start:
 
 temp0 ds 1
 
+level_ptr ds 2
+
 position_frac ds 1
 position_lo	ds 1
 position_hi	ds 1
@@ -56,6 +58,7 @@ sprite_ptr_hi = sprite_ptr+1
 sprite_ptr_lo = sprite_ptr
 
 ; Used in kernel
+save_sprite_count ds 1
 level_row ds 1
 rows_left ds 1
 vertical_shift ds 1
@@ -114,6 +117,9 @@ game_start:
 	sta sprite_ptr_hi
 	lda #<avatar_sprite  ; = $00, sprites start at $xx00
 	sta sprite_ptr_lo
+
+	lda #>level
+	sta level_ptr+1
 
 game_frame:
 	TIMER_SETUP 40   ;NTSC: 40 lines vblank
@@ -441,11 +447,15 @@ enter_kernel:
 	sta PF1
 	sta PF2
 
-	ldx level_row
-	inx
+	sty save_sprite_count  ; save it temporarily
+
+	ldy level_row
+	iny
 	beq .level_row_overflow
-	stx level_row
-	lda level,x
+	sty level_row
+
+	lda (level_ptr),y ; 5c
+
 	tax
 	lda bitmap_pf1l,x
 	sta row_pf1l
@@ -464,6 +474,7 @@ enter_kernel:
 	lda bitmap_pf2r,x
 	sta row_pf2r
 
+	ldy save_sprite_count   ; restore
 	iny
 	jmp .enter_graphics
 .end:
@@ -474,6 +485,8 @@ enter_kernel:
 	sta COLUBK
 	lda #underwater_whale_color
 	sta COLUP0
+
+	ldy save_sprite_count   ; restore
 	;iny  ; Skipping this makes the shark wobble - nice!
 	SLEEP 20  ; Makes it take about the same time as without overflow
 	jmp .enter_graphics

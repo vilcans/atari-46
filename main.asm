@@ -239,17 +239,12 @@ game_frame:
 	lda invincible_count
 	cmp #invincible_warning_time
 	bcs .broken
-	ldy health
-	beq .hidden
 	and #1
 	beq .not_invincible
 .broken:
 	lda #>broken_sprite
 	sta sprite_ptr_hi
 	jmp .invincibility_done
-.hidden:
-	lda #>gameover_sprite
-	sta sprite_ptr_hi
 .not_invincible:
 .invincibility_done
 
@@ -682,10 +677,6 @@ broken_sprite:
 	ECHO "Must fit on page"
 	ERROR
 	ENDIF
-
-	ALIGN $100
-gameover_sprite:
-	ds 192,0
 
 	ALIGN $100
 level_data_start:

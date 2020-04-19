@@ -263,11 +263,12 @@ game_frame:
 
 	; Start of visible graphics
 
-	ldy vertical_shift
+	ldy vertical_shift   ; shift_y_lines expects zero flag to reflect this
 	jsr shift_y_lines
 	ldy vertical_shift
-	jsr enter_kernel
+	jmp enter_kernel
 
+exit_kernel:
 	sta WSYNC
 
 	lda #$00
@@ -477,7 +478,7 @@ enter_kernel:
 	iny
 	jmp .enter_graphics
 .end:
-	rts
+	jmp exit_kernel
 
 .level_row_overflow:
 	lda #water_color

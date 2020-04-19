@@ -25,7 +25,8 @@ gravity = 3
 collision_bounce_velocity = -2
 
 water_color = $92
-whale_color = $1e
+whale_color_health_2 = $0a
+whale_color_health_1 = $28
 underwater_whale_color = $10
 
 ; When position is this, the whale hits the water
@@ -132,11 +133,8 @@ game_start:
 game_frame:
 	jsr start_frame
 
-	lda #whale_color
 	ldx health
-	bne .not_dead_color
-	lda #0
-.not_dead_color:
+	lda whale_color_by_health,x
 	sta COLUP0
 
 	lda #$00
@@ -646,6 +644,9 @@ shift_y_lines:
 	rts
 
 	INCLUDE "video.asm"
+
+whale_color_by_health:
+	.byte $00, whale_color_health_1, whale_color_health_2
 
 DATA SUBROUTINE
 level_number_sprites:

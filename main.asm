@@ -48,6 +48,7 @@ sprite_ptr_hi = sprite_ptr+1
 sprite_ptr_lo = sprite_ptr
 
 ; Used in kernel
+level_row ds 1
 rows_left ds 1
 vertical_shift ds 1
 level_color ds 1
@@ -190,7 +191,7 @@ game_frame:
 	lsr temp0
 	ror
 	REPEND
-	tax    ; x = level row index
+	sta level_row
 
 	lda #number_of_visible_rows
 	sta rows_left
@@ -388,7 +389,6 @@ scanline_in_row SET scanline_in_row + 1
 	beq .end
 
 enter_kernel:
-	inx
 	;sta WSYNC
 
 	lda (sprite_ptr),y
@@ -399,8 +399,9 @@ enter_kernel:
 	sta PF1
 	sta PF2
 
-	stx temp0
-
+	ldx level_row
+	inx
+	stx level_row
 	lda level,x
 	tax
 	lda bitmap_pf1l,x
@@ -420,7 +421,6 @@ enter_kernel:
 	lda bitmap_pf2r,x
 	sta row_pf2r
 
-	ldx temp0
 	iny
 	jmp .enter_graphics
 .end:

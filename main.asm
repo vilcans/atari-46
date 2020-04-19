@@ -9,6 +9,7 @@ number_of_visible_rows = (192 / row_height_scanlines) - 1
 
 invincibility_time = 200
 invincible_warning_time = 20
+invincibility_time_final = 216
 
 sprite_screen_y = 40
 
@@ -84,6 +85,9 @@ game_start:
 	sta AUDF0
 	lda #$8
 	sta AUDC0
+
+	lda #0
+	sta CTRLPF
 
 	.if 0
 	lda #$02    ; SCORE = different colors for left and right
@@ -289,8 +293,9 @@ game_frame:
 	ldx health
 	dex
 	stx health
-
+	beq .on_death_collision
 	lda #invincibility_time
+.after_on_death:
 	sta invincible_count
 
 .after_collision:
@@ -309,6 +314,15 @@ game_frame:
 
 	TIMER_WAIT
 	jmp game_frame
+
+.on_death_collision:
+	lda #$02    ; SCORE = different colors for left and right
+	sta CTRLPF
+	lda #$00
+	sta COLUP0
+	sta COLUP1
+	lda #invincibility_time_final
+	jmp .after_on_death
 
 .invincible:
 	dex

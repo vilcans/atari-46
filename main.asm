@@ -7,7 +7,7 @@ row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
 number_of_visible_rows = (192 / row_height_scanlines) - 1
 
-invincibility_time = 220
+invincibility_time = 200
 invincible_warning_time = 20
 
 sprite_screen_y = 40

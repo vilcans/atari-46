@@ -10,6 +10,8 @@ number_of_visible_rows = (192 / row_height_scanlines) - 1
 invincibility_time = 220
 invincible_warning_time = 20
 
+sprite_screen_y = 100
+
 min_x = 32-4
 max_x = min_x + 15 * 8 - 4
 
@@ -32,7 +34,9 @@ avatar_x ds 1
 health ds 1
 invincible_count ds 1
 
-sprite_counter ds 1   ; temp
+sprite_ptr ds 2
+sprite_ptr_hi = sprite_ptr+1
+sprite_ptr_lo = sprite_ptr
 
 ; Used in kernel
 rows_left ds 1
@@ -80,6 +84,11 @@ main_start:
 
 	lda #3
 	sta health
+
+	lda #>avatar_sprite
+	sta sprite_ptr_hi
+	lda #<avatar_sprite  ; = $00, sprites start at $xx00
+	sta sprite_ptr_lo
 
 game_frame:
 	lsr SWCHB ; test reset switch
@@ -187,6 +196,10 @@ game_frame:
 
 	lda #$02
 	sta COLUBK
+
+	lda #>avatar_sprite
+	sta sprite_ptr_hi
+
 	lda invincible_count
 	beq .not_invincible
 
@@ -202,11 +215,9 @@ game_frame:
 	and #1
 	beq .not_invincible
 .broken:
-	lda #broken_avatar_sprite_offset
+	lda #>broken_sprite
+	sta sprite_ptr_hi
 .not_invincible:
-	clc
-	adc vertical_shift
-	sta sprite_counter
 
 	sta CXCLR  ; clear collisions
 
@@ -219,7 +230,7 @@ game_frame:
 
 	ldy vertical_shift
 	jsr shift_y_lines
-	ldy sprite_counter
+	ldy vertical_shift
 	jsr enter_kernel
 
 	sta WSYNC
@@ -294,7 +305,7 @@ KERNEL SUBROUTINE
 	lda row_pf1l
 	sta PF1
 
-	lda avatar_sprite,y
+	lda (sprite_ptr),y
 	sta GRP0
 
 	lda level_color
@@ -323,7 +334,7 @@ enter_kernel:
 	inx
 	;sta WSYNC
 
-	lda avatar_sprite,y
+	lda (sprite_ptr),y
 	sta GRP0
 
 	lda #0
@@ -400,16 +411,27 @@ level_data_start:
 
 	ALIGN $100
 avatar_sprite:
-	ds 100,0
+	ds sprite_screen_y,0
 visible_sprite_start:
 	INCBIN "whale.dat"
 visible_sprite_height = *-visible_sprite_start
-broken_avatar_sprite_offset = *-avatar_sprite
+	ds 192 - sprite_screen_y - visible_sprite_height,0
 
-	ds 100,0
+	IF * - avatar_sprite > $100
+	ECHO "Must fit on page"
+	ERROR
+	ENDIF
+
+	ALIGN $100
+broken_sprite:
+	ds sprite_screen_y,0
 	INCBIN "deadwhale.dat"
+	ds 192 - sprite_screen_y - visible_sprite_height,0
 
-	ds 192-100-visible_sprite_height,0
+	IF * - broken_sprite > $100
+	ECHO "Must fit on page"
+	ERROR
+	ENDIF
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left

@@ -71,10 +71,10 @@ def write_source(label, values):
         address += 1
 
 
+write_source('level', level)
+
 for pf in range(1, 6):
     write_source(
         'bitmap_pf{0}{1}'.format(pf % 3, 'l' if pf < 3 else 'r'),
         [value[pf] for value in bitmaps]
     )
-
-write_source('level', level)

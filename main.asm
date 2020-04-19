@@ -342,9 +342,9 @@ KERNEL SUBROUTINE
 ;.current_line = {2}
 ;.color = {3}
 	IF {1} == {2}
-	lda level_color
-	ora #{3}
-	sta COLUPF
+	lda level_color   ; 3c
+	ora #{3}          ; 2c
+	sta COLUPF        ; 3c
 	ENDIF
 	ENDM
 

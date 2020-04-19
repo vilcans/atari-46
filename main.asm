@@ -454,9 +454,8 @@ enter_kernel:
 	beq .level_row_overflow
 	sty level_row
 
-	lda (level_ptr),y ; 5c
+	lax (level_ptr),y ; 5c
 
-	tax
 	lda bitmap_pf1l,x
 	sta row_pf1l
 	lda bitmap_pf2l,x

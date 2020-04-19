@@ -516,6 +516,8 @@ MAIN SUBROUTINE
 main_start:
 	CLEAN_START
 intro_start:
+	lda #0
+	sta AUDV0
 
 .intro_frame:
 	jsr start_frame

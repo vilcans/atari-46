@@ -2,7 +2,7 @@
 
 import sys
 from array import array
-from PIL import Image
+from PIL import Image, ImageOps
 
 import argparse
 
@@ -17,8 +17,8 @@ def convert(image):
 
     image = image.convert('RGB')
     data = array('B')
-    for y in range(image.size[1]):
-        for c in range(image.size[0] // 8):
+    for c in range(image.size[0] // 8):
+        for y in range(image.size[1]):
             value = 0
             for xoffs in range(8):
                 pixel = get_pixel(image, c * 8 + xoffs, y)
@@ -41,10 +41,15 @@ def main():
         type=argparse.FileType('wb'),
         help='File to write graphics data to'
     )
+    parser.add_argument(
+        '--flip', action='store_true', default=False,
+    )
 
     args = parser.parse_args()
 
     image = Image.open(args.source)
+    if args.flip:
+        image = ImageOps.flip(image)
 
     if (image.size[0] % 8) != 0:
         print('Image must have a width that is a multiple of 8', file=sys.stderr)

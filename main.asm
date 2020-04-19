@@ -3,6 +3,8 @@
 	include "macro.h"
 	include "xmacro.h"
 
+number_of_levels = 3
+
 row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
 number_of_visible_rows = (192 / row_height_scanlines) - 1
@@ -70,6 +72,10 @@ row_pf0r ds 1
 row_pf1r ds 1
 row_pf2r ds 1
 
+; Used in intro
+level_number ds 1
+wait_for_release ds 1
+
 	ECHO "Zero page used up to", *, "=", *-$80, "bytes"
 
 	seg code
@@ -119,19 +125,12 @@ game_start:
 	sta sprite_ptr_lo
 
 	lda #>level
+	clc
+	adc level_number
 	sta level_ptr+1
 
 game_frame:
-	TIMER_SETUP 40   ;NTSC: 40 lines vblank
-
-	lda #2
-	sta VBLANK
-	sta VSYNC
-	sta WSYNC  ; Keep VSYNC on for 3 scanlines
-	sta WSYNC
-	sta WSYNC
-	lda #0
-	sta VSYNC
+	jsr start_frame
 
 	lda #whale_color
 	sta COLUP0
@@ -518,6 +517,114 @@ main_start:
 	CLEAN_START
 intro_start:
 
+.intro_frame:
+	jsr start_frame
+
+	lda #$02
+	sta COLUBK
+	lda #$0f
+	sta COLUP0
+	sta COLUP1
+
+	TIMER_WAIT
+	sta VBLANK
+
+	; Visible area starts
+
+logo_y_position = 30
+logo_height = 23
+wide_sprite_height = logo_height
+wide_sprite0 = logo
+wide_sprite1 = logo + logo_height * 1
+wide_sprite2 = logo + logo_height * 2
+wide_sprite3 = logo + logo_height * 3
+wide_sprite4 = logo + logo_height * 4
+wide_sprite5 = logo + logo_height * 5
+
+level_number_height = 8
+
+	TIMER_SETUP logo_y_position
+
+	jsr display_wide_sprite
+
+	TIMER_SETUP 192 - logo_y_position - logo_height
+
+	sta WSYNC
+
+	lda #0
+	sta GRP0
+	sta GRP1
+	sta VDELP0
+	sta VDELP1
+	sta NUSIZ0
+	sta NUSIZ1
+	SLEEP 7
+	sta RESP0	; position
+
+	lda #$ff
+	sta COLUP0
+	sta COLUP1
+
+	lda level_number
+	asl  ; mul by level_number_height
+	asl
+	asl
+	tax
+
+	ldy #level_number_height+1
+.each_row:
+	sta WSYNC
+	lda level_number_sprites,x
+	sta GRP0
+	inx
+	dey
+	bne .each_row
+
+	lda #0
+	sta GRP0
+
+	; Check input
+	lda wait_for_release
+	bne .waiting
+
+	ldx level_number
+	lda SWCHA
+	asl
+	bcs .not_right
+	inc wait_for_release
+	inx
+	cpx #number_of_levels
+	bne .not_right
+	dex
+.not_right:
+	asl
+	bcs .not_left
+	inc wait_for_release
+	dex
+	bpl .not_left
+	inx
+.not_left:
+	stx level_number
+
+	lda INPT4
+	bpl .start
+
+	jmp .after_input
+
+.waiting:
+	lda SWCHA
+	eor #%11000000
+	and #%11000000
+	sta wait_for_release
+
+.after_input:
+
+	TIMER_WAIT
+	TIMER_SETUP 29
+	TIMER_WAIT
+
+	jmp .intro_frame
+.start:
 	jmp game_start
 
 ; Delay Y scanlines.
@@ -531,6 +638,8 @@ shift_y_lines:
 .end_shift:
 	rts
 
+	INCLUDE "video.asm"
+
 DATA SUBROUTINE
 
 	ALIGN $100
@@ -539,6 +648,10 @@ color_table:   ; Map color index in lowest 4 bits.
 	; Right now just a rol 4 lookup table
 	.byte $00,$10,$20,$30,$40,$50,$60,$70,$80,$90,$a0,$b0,$c0,$d0,$e0,$f0
 	REPEND
+
+	ALIGN $100
+logo:
+	INCBIN "logo.dat"
 
 	ALIGN $100
 level_data_start:
@@ -569,6 +682,9 @@ broken_sprite:
 	ECHO "Must fit on page"
 	ERROR
 	ENDIF
+
+level_number_sprites:
+	INCBIN "levelnumbers.dat"
 
 	ALIGN $100
 gameover_sprite:

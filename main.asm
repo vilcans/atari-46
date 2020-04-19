@@ -519,10 +519,11 @@ shift_y_lines:
 
 DATA SUBROUTINE
 
-level_data_start:
 	ALIGN $100
+level_data_start:
 	.include "level.asm"
-	echo "Size of levels:", *-level_data_start
+level_data_end:
+	echo "Size of levels:", level_data_end - level_data_start
 
 	ALIGN $100
 avatar_sprite:

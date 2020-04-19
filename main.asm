@@ -10,7 +10,7 @@ number_of_visible_rows = (192 / row_height_scanlines) - 1
 invincibility_time = 220
 invincible_warning_time = 20
 
-sprite_screen_y = 100
+sprite_screen_y = 40
 
 min_x = 32-4
 max_x = min_x + 15 * 8 - 4

@@ -2,6 +2,7 @@
 
 import argparse
 import re
+from itertools import chain
 
 line_with_color_re = re.compile(r'([0123456789abcdef])\s$')
 
@@ -13,8 +14,8 @@ parser.add_argument(
     help='File to write'
 )
 parser.add_argument(
-    'input', type=argparse.FileType('r'),
-    help='Text file to read'
+    'input', type=argparse.FileType('r'), nargs='+',
+    help='Text files to read'
 )
 
 args = parser.parse_args()
@@ -25,7 +26,7 @@ patterns = {}   # Map bits pattern to index in bitmaps
 
 current_color = 0
 
-for line in args.input:
+for line in chain.from_iterable(args.input):
     m = line_with_color_re.search(line)
     if m:
         current_color = int(m.group(1), 16)

@@ -17,8 +17,8 @@ run: $(PRODUCT).rom
 levels/%.txt: levels/%.json
 	python3 tiles_to_text.py $<
 
-level.asm: levels/level01.txt convert_level.py
-	python3 convert_level.py -o $@ $<
+level.asm: levels/level00.txt levels/level01.txt levels/level02.txt
+	python3 convert_level.py -o $@ $^
 
 logo.dat: logo.png
 	python3 convert_image.py --flip $< $@

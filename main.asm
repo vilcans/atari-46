@@ -641,6 +641,16 @@ shift_y_lines:
 	INCLUDE "video.asm"
 
 DATA SUBROUTINE
+level_number_sprites:
+	INCBIN "levelnumbers.dat"
+
+logo:
+	INCBIN "logo.dat"
+logo_end:
+	IF >logo_end != >logo
+	ECHO "Logo spans page"
+	ERROR
+	ENDIF
 
 	ALIGN $100
 color_table:   ; Map color index in lowest 4 bits.
@@ -648,16 +658,6 @@ color_table:   ; Map color index in lowest 4 bits.
 	; Right now just a rol 4 lookup table
 	.byte $00,$10,$20,$30,$40,$50,$60,$70,$80,$90,$a0,$b0,$c0,$d0,$e0,$f0
 	REPEND
-
-	ALIGN $100
-logo:
-	INCBIN "logo.dat"
-
-	ALIGN $100
-level_data_start:
-	.include "level.asm"
-level_data_end:
-	echo "Size of levels:", level_data_end - level_data_start
 
 	ALIGN $100
 avatar_sprite:
@@ -683,17 +683,23 @@ broken_sprite:
 	ERROR
 	ENDIF
 
-level_number_sprites:
-	INCBIN "levelnumbers.dat"
-
 	ALIGN $100
 gameover_sprite:
 	ds 192,0
 
+	ALIGN $100
+level_data_start:
+	.include "level.asm"
+level_data_end:
+	echo "Size of levels:", level_data_end - level_data_start
+
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left
 
+free_space:
+
 VECTORS SUBROUTINE
+vectors:
 	org $fffc
 	.word main_start
 	.word main_start

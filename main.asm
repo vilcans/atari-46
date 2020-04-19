@@ -328,7 +328,19 @@ game_reset:
 KERNEL SUBROUTINE
 ; Kernel renders an "initialization" scanline followed by 7 "graphics" scanlines
 
+	MAC set_color_on_line
+;.execute_on_line = {1}
+;.current_line = {2}
+;.color = {3}
+	IF {1} == {2}
+	lda level_color
+	ora #{3}
+	sta COLUPF
+	ENDIF
+	ENDM
+
 .enter_graphics:
+scanline_in_row SET 1   ; because row 0 is initialization
 	REPEAT row_height_scanlines - 1  ; minus 1 because first row is initialization
 	sta WSYNC
 
@@ -340,10 +352,13 @@ KERNEL SUBROUTINE
 	lda (sprite_ptr),y
 	sta GRP0
 
-	lda level_color
-	sta COLUPF
-	sbc #2
-	sta level_color
+	set_color_on_line 1, scanline_in_row, $e
+	set_color_on_line 2, scanline_in_row, $c-1
+	set_color_on_line 3, scanline_in_row, $a-1
+	set_color_on_line 4, scanline_in_row, $8-1
+	set_color_on_line 5, scanline_in_row, $6-1
+	set_color_on_line 6, scanline_in_row, $4-1
+	set_color_on_line 7, scanline_in_row, $2-1
 
 	lda row_pf2l
 	sta PF2
@@ -357,6 +372,7 @@ KERNEL SUBROUTINE
 
 	iny  ; next sprite pointer
 
+scanline_in_row SET scanline_in_row + 1
 	REPEND
 
 	dec rows_left
@@ -388,7 +404,6 @@ enter_kernel:
 	asl
 	asl
 	asl
-	ora #$e
 	sta level_color
 
 	lda bitmap_pf1r,x

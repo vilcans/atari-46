@@ -552,7 +552,7 @@ level_number_height = 8
 
 	jsr display_wide_sprite
 
-	TIMER_SETUP 192 - logo_y_position - logo_height + 1
+	TIMER_SETUP 192 - logo_y_position - logo_height
 
 	sta WSYNC
 
@@ -563,7 +563,7 @@ level_number_height = 8
 	sta VDELP1
 	sta NUSIZ0
 	sta NUSIZ1
-	SLEEP 7
+	SLEEP 22
 	sta RESP0	; position
 
 	lda #$ff

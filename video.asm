@@ -27,7 +27,7 @@ LoopCount	byte
 display_wide_sprite:
 	; Expects a timer setup for when to start rendering
 
-	lda #wide_sprite_height
+	lda #wide_sprite_height-1
 	sta LoopCount	; scanline counter
 	lda #%011
 	sta NUSIZ0

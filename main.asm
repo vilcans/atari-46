@@ -552,7 +552,7 @@ level_number_height = 8
 
 	jsr display_wide_sprite
 
-	TIMER_SETUP 192 - logo_y_position - logo_height
+	TIMER_SETUP 192 - logo_y_position - logo_height + 1
 
 	sta WSYNC
 

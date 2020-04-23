@@ -40,7 +40,6 @@ display_wide_sprite:
 	sta HMP1	; 1 pixel to the left
 	sta WSYNC
 	sta HMOVE	; apply HMOVE
-	sta HMCLR
 	lda #1
 	sta VDELP0	; we need the VDEL registers
 	sta VDELP1	; so we can do our 4-store trick

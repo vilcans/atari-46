@@ -33,6 +33,15 @@ underwater_whale_color = $10
 ; When position is this, the whale hits the water
 water_surface_position = ($100 - number_of_visible_rows) * row_height_scanlines + (192 - sprite_screen_y - visible_sprite_height)
 
+align_bytes SET 0
+	MAC XALIGN
+.before:
+	ALIGN {1}
+.bytes = * - .before
+align_bytes SET align_bytes + .bytes
+	ECHO "Align used", .bytes, "bytes at", .before
+	ENDM
+
 	seg.u variables
 	org $80
 
@@ -500,7 +509,7 @@ UTILITIES SUBROUTINE
 ; Based on 8bitworkshop's SetHorizPos
 ; A = X coordinate
 ; X = player number (0 or 1)
-	ALIGN $8   ; Avoid loop spanning page
+	XALIGN $8   ; Avoid loop spanning page
 set_x_pos:
 	sta WSYNC	; start a new line
 	sec		; set carry flag
@@ -649,8 +658,6 @@ whale_color_by_health:
 	.byte $00, whale_color_health_1, whale_color_health_2
 
 DATA SUBROUTINE
-level_number_sprites:
-	INCBIN "levelnumbers.dat"
 
 logo:
 	INCBIN "logo.dat"
@@ -660,14 +667,17 @@ logo_end:
 	ERROR
 	ENDIF
 
-	ALIGN $100
+level_number_sprites:
+	INCBIN "levelnumbers.dat"
+
+	XALIGN $100
 color_table:   ; Map color index in lowest 4 bits.
 	REPEAT $10
 	; Right now just a rol 4 lookup table
 	.byte $00,$10,$20,$30,$40,$50,$60,$70,$80,$90,$a0,$b0,$c0,$d0,$e0,$f0
 	REPEND
 
-	ALIGN $100
+	XALIGN $100
 avatar_sprite:
 	ds sprite_screen_y,0
 visible_sprite_start:
@@ -680,7 +690,7 @@ visible_sprite_height = *-visible_sprite_start
 	ERROR
 	ENDIF
 
-	ALIGN $100
+	XALIGN $100
 broken_sprite:
 	ds sprite_screen_y,0
 	INCBIN "deadwhale.dat"
@@ -691,7 +701,7 @@ broken_sprite:
 	ERROR
 	ENDIF
 
-	ALIGN $100
+	XALIGN $100
 level_data_start:
 	.include "level.asm"
 level_data_end:
@@ -699,6 +709,7 @@ level_data_end:
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left
+	echo "Bytes used for aligning:", align_bytes
 	IF bytes_left < 0
 	ERR
 	ENDIF

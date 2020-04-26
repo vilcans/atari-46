@@ -700,6 +700,9 @@ level_data_end:
 
 bytes_left = $fffc-*
 	echo "Bytes left:", bytes_left
+	IF bytes_left < 0
+	ERR
+	ENDIF
 
 free_space:
 

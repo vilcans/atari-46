@@ -22,13 +22,16 @@ starting_x = (max_x + min_x) / 2
 
 starting_health = 2
 
-gravity = 3
+gravity = 2  ; +1 for hard difficulty setting
 collision_bounce_velocity = -2
 
 water_color = $92
 whale_color_health_2 = $0a
 whale_color_health_1 = $28
 underwater_whale_color = $10
+
+hard_color = $3c
+easy_color = $cc
 
 ; When position is this, the whale hits the water
 water_surface_position = ($100 - number_of_visible_rows) * row_height_scanlines + (192 - sprite_screen_y - visible_sprite_height)
@@ -329,7 +332,9 @@ exit_kernel:
 .after_collision:
 
 	; Apply gravity to velocity. Skipped if game over.
-	clc
+	lda SWCHB  ; bit 7 = P1 difficulty, bit 6 = P0 difficulty
+	rol
+	rol
 	lda velocity_y_frac
 	adc #gravity
 	sta velocity_y_frac
@@ -574,9 +579,14 @@ level_number_height = 8
 	SLEEP_Y 22
 	sta RESP0	; position
 
-	lda #$ff
-	sta COLUP0
-	sta COLUP1
+	ldy #hard_color
+	lda SWCHB  ; bit 7 = P1 difficulty, bit 6 = P0 difficulty
+	rol
+	bmi .hard
+	ldy #easy_color
+.hard:
+	sty COLUP0
+	sty COLUP1
 
 	lda level_number
 	asl  ; mul by level_number_height

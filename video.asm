@@ -47,7 +47,12 @@ display_wide_sprite:
 	sta WSYNC
 	sta HMOVE	; 3c. apply HMOVE
 
-	SLEEP_Y sprite_x_offset + 76 - 51 - 3
+.waittimer:
+	lda INTIM
+	bne .waittimer
+	sta WSYNC
+
+	SLEEP_Y sprite_x_offset + 76 - 51
 BigLoop
 	ldy LoopCount         ; 3c
 	lda wide_sprite0,y    ; 4c load B0 (1st sprite byte)

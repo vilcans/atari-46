@@ -535,7 +535,7 @@ intro_start:
 .intro_frame:
 	jsr start_frame
 
-	lda #$02
+	lda #$00
 	sta COLUBK
 	lda #$0f
 	sta COLUP0
@@ -557,11 +557,10 @@ wide_sprite5 = logo + logo_height * 5
 level_number_height = 8
 
 	TIMER_SETUP logo_y_position
-	TIMER_WAIT
 
 	jsr display_wide_sprite
 
-	TIMER_SETUP 192 - logo_y_position - logo_height - 1
+	TIMER_SETUP 192 - logo_y_position - logo_height + 1
 
 	sta WSYNC
 

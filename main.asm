@@ -2,6 +2,7 @@
 	include "vcs.h"
 	include "macro.h"
 	include "xmacro.h"
+	include "sleep.h"
 
 number_of_levels = 3
 

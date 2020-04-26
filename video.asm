@@ -36,7 +36,7 @@ display_wide_sprite:
 	sta NUSIZ1	; both players have 3 copies
 
 	sta WSYNC
-	SLEEP sprite_x_offset
+	SLEEP_Y sprite_x_offset
 	sta RESP0	; position 1st player
 	sta RESP1	; ...and 2nd player
 	lda #$10
@@ -55,7 +55,7 @@ display_wide_sprite:
 	sta VDELP1	; so we can do our 4-store trick
 
 	sta WSYNC
-	SLEEP sprite_x_offset + 76 - 51
+	SLEEP_Y sprite_x_offset + 76 - 51
 BigLoop
 	ldy LoopCount         ; 3c
 	lda wide_sprite0,y    ; 4c load B0 (1st sprite byte)

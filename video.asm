@@ -16,7 +16,7 @@ start_frame:
 	sta VSYNC
 	rts
 
-; From 8bitworkshop 48 pixel sprite example
+; Based on http://www.qotile.net/minidig/code/bigmove.asm
 	seg.u variables
 
 Temp		byte

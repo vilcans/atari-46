@@ -23,7 +23,6 @@
 		bne .each  ; 3c/2c
 .cycles SET .cycles - (2 + .iterations * 5 - 1)
 	ENDIF
-	ECHO "Cycles=", .cycles
 	IF .cycles & 1
 		nop 0
 .cycles SET .cycles - 3

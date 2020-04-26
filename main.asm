@@ -535,8 +535,6 @@ intro_start:
 	TIMER_WAIT
 	sta VBLANK
 
-	; Visible area starts
-
 logo_y_position = 30
 logo_height = 23
 wide_sprite_height = logo_height
@@ -550,10 +548,11 @@ wide_sprite5 = logo + logo_height * 5
 level_number_height = 8
 
 	TIMER_SETUP logo_y_position
+	TIMER_WAIT
 
 	jsr display_wide_sprite
 
-	TIMER_SETUP 192 - logo_y_position - logo_height
+	TIMER_SETUP 192 - logo_y_position - logo_height - 1
 
 	sta WSYNC
 
@@ -564,7 +563,7 @@ level_number_height = 8
 	sta VDELP1
 	sta NUSIZ0
 	sta NUSIZ1
-	SLEEP 22
+	SLEEP_Y 22
 	sta RESP0	; position
 
 	lda #$ff

@@ -34,28 +34,20 @@ display_wide_sprite:
 	lda #%011
 	sta NUSIZ0
 	sta NUSIZ1	; both players have 3 copies
+	lda #1
+	sta VDELP0
+	sta VDELP1
 
 	sta WSYNC
 	SLEEP_Y sprite_x_offset
 	sta RESP0	; position 1st player
-	sta RESP1	; ...and 2nd player
+	sta RESP1	; ...and 2nd player, 3 cycles later = 9 pixels
 	lda #$10
-	sta HMP1	; 1 pixel to the left
+	sta HMP1	; 1 pixel to the left = 8 pixels
 	sta WSYNC
-	sta HMOVE	; apply HMOVE
+	sta HMOVE	; 3c. apply HMOVE
 
-.waittimer
-	lda INTIM
-	bne .waittimer
-	sta VBLANK
-	sta WSYNC
-
-	lda #1
-	sta VDELP0	; we need the VDEL registers
-	sta VDELP1	; so we can do our 4-store trick
-
-	sta WSYNC
-	SLEEP_Y sprite_x_offset + 76 - 51
+	SLEEP_Y sprite_x_offset + 76 - 51 - 3
 BigLoop
 	ldy LoopCount         ; 3c
 	lda wide_sprite0,y    ; 4c load B0 (1st sprite byte)

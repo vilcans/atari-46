@@ -536,6 +536,7 @@ main_start:
 intro_start:
 	lda #0
 	sta AUDV0
+	sta HMP0
 
 .intro_frame:
 	jsr start_frame

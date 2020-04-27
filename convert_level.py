@@ -23,6 +23,7 @@ args = parser.parse_args()
 bitmaps = []
 level = []
 patterns = {}   # Map bits pattern to index in bitmaps
+used_colors = { c: 0 for c in range(16) }
 
 current_color = 0
 
@@ -47,8 +48,14 @@ for line in chain.from_iterable(args.input):
 
         patterns[key] = len(bitmaps)
         bitmaps.append((None, pf1l, pf2l, pf0r, pf1r, pf2r))
+        used_colors[current_color] += 1
 
     level.append(patterns[key])
+
+print('Color usage:\n' + ', '.join(
+    '$%02x: %d' % (color, count)
+    for color, count in used_colors.items()
+))
 
 out = args.o
 

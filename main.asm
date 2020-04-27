@@ -53,7 +53,8 @@ kernel_scanlines = 228
 overscan_scanlines = 36
 ; Total: 312 scanlines
 
-playfield_height = 224
+playfield_height = 192
+top_margin = 20
 
 	ELSE
 
@@ -63,6 +64,7 @@ overscan_scanlines = 30
 ; Total: 262 scanlines
 
 playfield_height = kernel_scanlines
+top_margin = 0
 
 	ENDIF
 
@@ -102,6 +104,8 @@ invincible_count ds 1
 success_counter ds 1  ; how many frames since success
 
 zp_clear_end:
+
+bg_color ds 1
 
 sprite_ptr ds 2
 sprite_ptr_hi = sprite_ptr+1
@@ -233,7 +237,7 @@ game_frame:
 
 	; Default background color
 	lda #$02
-	sta COLUBK
+	sta bg_color
 
 	; Get level row from high resolution position
 	lda position_hi
@@ -247,7 +251,7 @@ game_frame:
 	ldx temp0
 	beq .no_row_clamp
 	lda #water_color
-	sta COLUBK
+	sta bg_color
 	lda #$ff
 .no_row_clamp:
 	sta level_row
@@ -271,7 +275,7 @@ game_frame:
 
 	adc #-invincibility_time+$0f
 	bcc .no_flash
-	sta COLUBK
+	sta bg_color
 	sta AUDV0
 .no_flash:
 
@@ -296,9 +300,17 @@ game_frame:
 	;lda #0   ; already 0 from TIMER_WAIT
 	sta VBLANK
 
+	IF top_margin != 0
+	ldy #top_margin
+	jsr shift_y_lines_not_zero
+	ENDIF
+
 	; Start of visible graphics
 
-	ldy vertical_shift   ; shift_y_lines expects zero flag to reflect this
+	lda bg_color
+	sta COLUBK
+
+	ldy vertical_shift
 	jsr shift_y_lines
 	ldy vertical_shift
 	jmp enter_kernel
@@ -321,7 +333,7 @@ exit_kernel:
 	lda #$00
 	sta COLUBK
 
-	TIMER_SETUP overscan_scanlines - 1 + (kernel_scanlines - playfield_height)
+	TIMER_SETUP overscan_scanlines - 1 + (kernel_scanlines - playfield_height - top_margin)
 
 	ldx invincible_count
 	bne .invincible
@@ -674,6 +686,7 @@ level_number_height = 8
 ; Zero flag must correspond to the value in Y before call.
 shift_y_lines:
 	beq .end_shift
+shift_y_lines_not_zero:
 .each_shift:
 	sta WSYNC
 	dey

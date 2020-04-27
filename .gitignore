@@ -1,6 +1,11 @@
-game.rom
-game.sym
-game.lst
+whale-PAL.rom
+whale-PAL.lst
+whale-PAL.sym
+
+whale-NTSC.rom
+whale-NTSC.lst
+whale-NTSC.sym
+
 level.asm
 deadwhale.dat
 whale.dat

@@ -4,7 +4,7 @@ start_frame:
 	;   TIMER_WAIT
 	;   sta VBLANK
 
-	TIMER_SETUP 40   ;NTSC: 40 lines vblank
+	TIMER_SETUP vblank_scanlines
 
 	lda #2
 	sta VBLANK

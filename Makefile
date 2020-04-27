@@ -1,14 +1,18 @@
-PRODUCT ?= game
-
 DASM = dasm
 
 SOURCES = main.asm video.asm level.asm
 RESOURCES = whale.dat deadwhale.dat logo.dat levelnumbers.dat
 
-all: $(PRODUCT).rom
+TV ?= NTSC
+
+PRODUCT ?= whale-$(TV)
+
+all:
+	$(MAKE) TV=PAL whale-PAL.rom
+	$(MAKE) TV=NTSC whale-NTSC.rom
 
 $(PRODUCT).rom: $(SOURCES) $(RESOURCES)
-	$(DASM) main.asm -s$(PRODUCT).sym -l$(PRODUCT).lst -f3 -o$(PRODUCT).rom
+	$(DASM) main.asm -D$(TV) -s$(PRODUCT).sym -l$(PRODUCT).lst -f3 -o$(PRODUCT).rom
 
 .PHONY: run
 run: $(PRODUCT).rom

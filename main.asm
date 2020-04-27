@@ -8,7 +8,7 @@ number_of_levels = 3
 
 row_height_bits = 3
 row_height_scanlines = 1 << row_height_bits
-number_of_visible_rows = (192 / row_height_scanlines) - 1
+number_of_visible_rows = (playfield_height / row_height_scanlines) - 1
 
 invincibility_time = 200
 invincible_warning_time = 20
@@ -27,16 +27,48 @@ collision_bounce_velocity = -2
 
 ; Colors
 
+	IFCONST PAL
+water_color = $b2
+whale_color_health_2 = $0a
+whale_color_health_1 = $28
+underwater_whale_color = $20
+logo_color = $0e
+hard_color = $48  ; Level number color in Advanced difficulty
+easy_color = $5a  ; Level number color in Beginner difficulty
+	ELSE
 water_color = $92
 whale_color_health_2 = $0a
 whale_color_health_1 = $28
 underwater_whale_color = $10
-logo_color = $0f
+logo_color = $0e
 hard_color = $3c  ; Level number color in Advanced difficulty
 easy_color = $cc  ; Level number color in Beginner difficulty
+	ENDIF
+
+; Video timing
+
+	IFCONST PAL
+vblank_scanlines = 48   ; (3 with vsync)
+kernel_scanlines = 228
+overscan_scanlines = 36
+; Total: 312 scanlines
+
+playfield_height = 224
+
+	ELSE
+
+vblank_scanlines = 40   ; (3 with vsync)
+kernel_scanlines = 192
+overscan_scanlines = 30
+; Total: 262 scanlines
+
+playfield_height = kernel_scanlines
+
+	ENDIF
+
 
 ; When position is this, the whale hits the water
-water_surface_position = ($100 - number_of_visible_rows) * row_height_scanlines + (192 - sprite_screen_y - visible_sprite_height)
+water_surface_position = ($100 - number_of_visible_rows) * row_height_scanlines + (playfield_height - sprite_screen_y - visible_sprite_height)
 
 align_bytes SET 0
 	MAC XALIGN
@@ -96,12 +128,6 @@ wait_for_release ds 1
 
 	seg code
 	org  $f000
-
-; NTSC timing:
-; 40 scanlines vblank (3 with vsync)
-; 192 scanlines kernel
-; 30 scanlines overscan
-; Total: 262 scanlines
 
 game_start:
 	lda #0
@@ -295,7 +321,7 @@ exit_kernel:
 	lda #$00
 	sta COLUBK
 
-	TIMER_SETUP 29  ; NTSC: 30 lines overscan
+	TIMER_SETUP overscan_scanlines - 1 + (kernel_scanlines - playfield_height)
 
 	ldx invincible_count
 	bne .invincible
@@ -559,7 +585,7 @@ level_number_height = 8
 
 	jsr display_wide_sprite
 
-	TIMER_SETUP 192 - logo_y_position - logo_height + 1
+	TIMER_SETUP kernel_scanlines - logo_y_position - logo_height + 1
 
 	sta WSYNC
 
@@ -637,7 +663,7 @@ level_number_height = 8
 .after_input:
 
 	TIMER_WAIT
-	TIMER_SETUP 29
+	TIMER_SETUP overscan_scanlines - 1
 	TIMER_WAIT
 
 	jmp .intro_frame
@@ -674,10 +700,15 @@ level_number_sprites:
 	INCBIN "levelnumbers.dat"
 
 	XALIGN $100
-color_table:   ; Map color index in lowest 4 bits.
+color_table:   ; Map color index in lowest 4 bits to color.
 	REPEAT $10
-	; Right now just a rol 4 lookup table
+	IFCONST PAL
+	; From second table at https://atariage.com/forums/topic/165424-modify-colour-palette/?tab=comments#comment-2043124
+	.byte $00,$20,$20,$40,$60,$80,$A0,$C0,$D0,$B0,$90,$70,$50,$30,$30,$20
+	ELSE
+	; For NTSC, just a rol 4 lookup table
 	.byte $00,$10,$20,$30,$40,$50,$60,$70,$80,$90,$a0,$b0,$c0,$d0,$e0,$f0
+	ENDIF
 	REPEND
 
 	XALIGN $100
@@ -686,7 +717,7 @@ avatar_sprite:
 visible_sprite_start:
 	INCBIN "whale.dat"
 visible_sprite_height = *-visible_sprite_start
-	ds 192 - sprite_screen_y - visible_sprite_height,0
+	ds playfield_height - sprite_screen_y - visible_sprite_height,0
 
 	IF * - avatar_sprite > $100
 	ECHO "Must fit on page"
@@ -697,7 +728,7 @@ visible_sprite_height = *-visible_sprite_start
 broken_sprite:
 	ds sprite_screen_y,0
 	INCBIN "deadwhale.dat"
-	ds 192 - sprite_screen_y - visible_sprite_height,0
+	ds playfield_height - sprite_screen_y - visible_sprite_height,0
 
 	IF * - broken_sprite > $100
 	ECHO "Must fit on page"

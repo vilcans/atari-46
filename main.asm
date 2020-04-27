@@ -25,13 +25,15 @@ starting_health = 2
 gravity = 2  ; +1 for hard difficulty setting
 collision_bounce_velocity = -2
 
+; Colors
+
 water_color = $92
 whale_color_health_2 = $0a
 whale_color_health_1 = $28
 underwater_whale_color = $10
-
-hard_color = $3c
-easy_color = $cc
+logo_color = $0f
+hard_color = $3c  ; Level number color in Advanced difficulty
+easy_color = $cc  ; Level number color in Beginner difficulty
 
 ; When position is this, the whale hits the water
 water_surface_position = ($100 - number_of_visible_rows) * row_height_scanlines + (192 - sprite_screen_y - visible_sprite_height)
@@ -117,15 +119,6 @@ game_start:
 
 	lda #0
 	sta CTRLPF
-
-	.if 0
-	lda #$02    ; SCORE = different colors for left and right
-	sta CTRLPF
-	lda #$18
-	sta COLUP0
-	lda #$88
-	sta COLUP1
-	.endif
 
 	lda #starting_x
 	sta avatar_x
@@ -543,7 +536,7 @@ intro_start:
 
 	lda #$00
 	sta COLUBK
-	lda #$0f
+	lda #logo_color
 	sta COLUP0
 	sta COLUP1
 
